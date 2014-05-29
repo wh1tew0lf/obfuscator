@@ -180,4 +180,17 @@ class obfuscator {
             return '<?php';
         }
     }
+
+    public static function clearState() {
+        self::$errors = array();
+        self::$parser = null;
+        self::$variables = array();
+        self::$definedFunctions = array();
+        self::$definedDynamicMethods = array();
+        self::$definedStaticMethods = array();
+        self::$classes = array();
+        self::$class = null;
+        self::$_stmts = null;
+        self::$unObfuscatedVariables = array('this' => 'this');
+    }
 }
