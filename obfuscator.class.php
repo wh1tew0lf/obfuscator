@@ -25,6 +25,23 @@ class obfuscator {
 
     public static $unObfuscatedVariables = array('this' => 'this');
 
+    public static $unObfuscatedMethods = array(
+        '__construct' => '__construct',
+        '__destruct' => '__destruct',
+        '__call' => '__call',
+        '__callStatic' => '__callStatic',
+        '__get' => '__get',
+        '__set' => '__set',
+        '__isset' => '__isset',
+        '__unset' => '__unset',
+        '__sleep' => '__sleep',
+        '__wakeup' => '__wakeup',
+        '__toString' => '__toString',
+        '__invoke' => '__invoke',
+        '__set_state' => '__set_state',
+        '__clone' => '__clone'
+    );
+
     private static function _parser() {
         if (self::$parser === null) {
             self::$parser = new PhpParser\Parser(new PhpParser\Lexer);
@@ -53,6 +70,7 @@ class obfuscator {
         if ((($tree instanceof PhpParser\Node\Expr\Variable) ||
             ($tree instanceof PhpParser\Node\Param) ||
             ($tree instanceof PhpParser\Node\Expr\PropertyFetch) ||
+            ($tree instanceof PhpParser\Node\Expr\StaticPropertyFetch) ||
             ($tree instanceof PhpParser\Node\Stmt\PropertyProperty)) &&
             !isset(self::$unObfuscatedVariables[$tree->name]))
         {
@@ -63,7 +81,8 @@ class obfuscator {
             self::$definedFunctions[$tree->name] = $tree->name;
         }
 
-        if ($tree instanceof PhpParser\Node\Stmt\ClassMethod) {
+        if (($tree instanceof PhpParser\Node\Stmt\ClassMethod) &&
+            !isset(self::$unObfuscatedMethods[$tree->name])) {
             if ($tree->isStatic()) {
                 self::$definedStaticMethods[/*self::$class][*/$tree->name] = $tree->name;
             } else {
@@ -119,6 +138,7 @@ class obfuscator {
         if ((($tree instanceof PhpParser\Node\Expr\Variable) ||
             ($tree instanceof PhpParser\Node\Param) ||
             ($tree instanceof PhpParser\Node\Expr\PropertyFetch) ||
+            ($tree instanceof PhpParser\Node\Expr\StaticPropertyFetch) ||
             ($tree instanceof PhpParser\Node\Stmt\PropertyProperty)) &&
             isset(self::$variables[$tree->name]))
         {
