@@ -65,7 +65,7 @@ echo "A and B count: {$b->method2()}\n";
 $c = new C;
 
 echo "C Age: {$c->age}\n";
-//echo "C parent age: {$c->parent_age}\n";
+echo "C parent age: {$c->parent_age}\n";
 
 C::echoCount();
 

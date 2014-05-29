@@ -1,5 +1,12 @@
 <?php
 
+/**
+ * @todo Global vars
+ * @todo Think on the using process
+ * @todo Strings rename too
+ * @todo Replace numbers as expressions
+ */
+
 if (!class_exists('PhpParser\Parser')) {
     require_once '../PHP-Parser/lib/bootstrap.php';
 }
@@ -10,6 +17,8 @@ class obfuscator {
     public static $parser = null;
 
     public static $variables = array();
+
+    public static $properties = array();
 
     public static $definedFunctions = array();
 
@@ -67,11 +76,15 @@ class obfuscator {
             self::$class = $tree->name;
         }
 
-        if ((($tree instanceof PhpParser\Node\Expr\Variable) ||
-            ($tree instanceof PhpParser\Node\Param) ||
-            ($tree instanceof PhpParser\Node\Expr\PropertyFetch) ||
+        if ((($tree instanceof PhpParser\Node\Expr\PropertyFetch) ||
             ($tree instanceof PhpParser\Node\Expr\StaticPropertyFetch) ||
-            ($tree instanceof PhpParser\Node\Stmt\PropertyProperty)) &&
+            ($tree instanceof PhpParser\Node\Stmt\PropertyProperty)))
+        {
+            self::$properties[$tree->name] = $tree->name;
+        }
+
+        if ((($tree instanceof PhpParser\Node\Expr\Variable) ||
+            ($tree instanceof PhpParser\Node\Param)) &&
             !isset(self::$unObfuscatedVariables[$tree->name]))
         {
             self::$variables[$tree->name] = $tree->name;
@@ -135,11 +148,16 @@ class obfuscator {
             }
         }
 
-        if ((($tree instanceof PhpParser\Node\Expr\Variable) ||
-            ($tree instanceof PhpParser\Node\Param) ||
-            ($tree instanceof PhpParser\Node\Expr\PropertyFetch) ||
+        if ((($tree instanceof PhpParser\Node\Expr\PropertyFetch) ||
             ($tree instanceof PhpParser\Node\Expr\StaticPropertyFetch) ||
             ($tree instanceof PhpParser\Node\Stmt\PropertyProperty)) &&
+            isset(self::$properties[$tree->name]))
+        {
+            $tree->name = self::$properties[$tree->name];
+        }
+
+        if ((($tree instanceof PhpParser\Node\Expr\Variable) ||
+            ($tree instanceof PhpParser\Node\Param)) &&
             isset(self::$variables[$tree->name]))
         {
             $tree->name = self::$variables[$tree->name];
