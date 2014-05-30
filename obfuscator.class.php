@@ -26,9 +26,15 @@ class obfuscator {
 
     public static $definedStaticMethods = array();
 
+    public static $strings = array();
+
     public static $classes = array();
 
     public static $class = null;
+
+    public static $call = null;
+
+    public static $param = null;
 
     private static $_stmts = null;
 
@@ -92,21 +98,54 @@ class obfuscator {
 
         if ($tree instanceof PhpParser\Node\Stmt\Function_) {
             self::$definedFunctions[$tree->name] = $tree->name;
+            self::$call = $tree->name;
         }
 
-        if (($tree instanceof PhpParser\Node\Stmt\ClassMethod) &&
-            !isset(self::$unObfuscatedMethods[$tree->name])) {
-            if ($tree->isStatic()) {
-                self::$definedStaticMethods[/*self::$class][*/$tree->name] = $tree->name;
-            } else {
-                self::$definedDynamicMethods[/*self::$class][*/$tree->name] = $tree->name;
+        if ($tree instanceof PhpParser\Node\Stmt\ClassMethod) {
+            if (!isset(self::$unObfuscatedMethods[$tree->name])) {
+                if ($tree->isStatic()) {
+                    self::$definedStaticMethods[/*self::$class][*/$tree->name] = $tree->name;
+                } else {
+                    self::$definedDynamicMethods[/*self::$class][*/$tree->name] = $tree->name;
+                }
             }
+            if (self::$call !== null) {
+                self::$errors[] = 'In call "' . self::$call . '" defined call "' . $tree->name . '"';
+            }
+            self::$call = $tree->name;
+        }
+
+        if ($tree instanceof PhpParser\Node\Param) {
+            if (self::$param !== null) {
+                self::$errors[] = 'In param "' . self::$param . '" defined param "' . $tree->name . '"';
+            }
+            self::$param = $tree->name;
+        }
+
+        if ((self::$param === null) && ($tree instanceof PhpParser\Node\Scalar\String)) {
+            self::$strings[] = $tree->value;
         }
 
         if (is_array($tree) || is_object($tree)) {
             foreach($tree as &$leaf) {
+                if ($leaf instanceof PhpParser\Node\Scalar\Encapsed) {
+                    foreach ($leaf->parts as &$part) {
+                        if (is_string($part)) {
+                            self::$strings[] = $part;
+                        }
+                    }
+                }
                 self::_anylizeOrder($leaf);
             }
+        }
+
+        if ($tree instanceof PhpParser\Node\Param) {
+            self::$param = null;
+        }
+
+        if (($tree instanceof PhpParser\Node\Stmt\ClassMethod) ||
+            ($tree instanceof PhpParser\Node\Stmt\Function_)) {
+            self::$call = null;
         }
 
         if ($tree instanceof PhpParser\Node\Stmt\Class_) {
@@ -125,11 +164,12 @@ class obfuscator {
             self::$errors[] = 'Anylize without code';
         }
 
-        var_dump(self::$classes);
+        /*var_dump(self::$classes);
         var_dump(self::$definedFunctions);
         var_dump(self::$definedDynamicMethods);
-        var_dump(self::$definedStaticMethods);
-        var_dump(self::$_stmts);
+        var_dump(self::$definedStaticMethods);*/
+        var_dump(self::$strings);
+        //var_dump(self::$_stmts);
     }
 
     public static function encodeName($name) {
@@ -175,10 +215,45 @@ class obfuscator {
             $tree->name = self::$definedDynamicMethods[$tree->name];
         }
 
-        if (is_array($tree) || is_object($tree)) {
-            foreach($tree as &$leaf) {
-                self::_obfuscateOrder($leaf);
+        if ($tree instanceof PhpParser\Node\Param) {
+            if (self::$param !== null) {
+                self::$errors[] = 'In param "' . self::$param . '" defined param "' . $tree->name . '"';
             }
+            self::$param = $tree->name;
+        }
+
+        if (is_array($tree) || is_object($tree)) {
+            foreach($tree as $node => &$leaf) {
+                if ((self::$param === null) && ($leaf instanceof PhpParser\Node\Scalar\String)) {
+                    $tree->{$node} = new PhpParser\Node\Expr\FuncCall(new PhpParser\Node\Name('MyStrings'), array(
+                        new PhpParser\Node\Arg(new PhpParser\Node\Scalar\LNumber(
+                            (int)array_search($leaf->value, self::$strings)
+                        ))
+                    ));
+                } else {
+                    if ($leaf instanceof PhpParser\Node\Scalar\Encapsed) {
+                        //Replace Encapsed to concat may be...
+                    }
+
+                    /*foreach ($leaf->parts as $index => $part) {
+                        if (is_string($part)) {
+                            self::$strings[] = $part;
+                        }
+                    }
+
+                    //var_dump($node);
+                    $tree->{$node} = new PhpParser\Node\Expr\FuncCall(new PhpParser\Node\Name('MyStrings'), array(
+                        new PhpParser\Node\Arg(new PhpParser\Node\Scalar\LNumber(
+                            (int)array_search($leaf->value, self::$strings)
+                        ))
+                    ));*/
+                    self::_obfuscateOrder($leaf);
+                }
+            }
+        }
+
+        if ($tree instanceof PhpParser\Node\Param) {
+            self::$param = null;
         }
     }
 
@@ -208,6 +283,39 @@ class obfuscator {
         } else {
             self::$errors[] = 'Anylize without code';
         }
+
+        $factory = new PhpParser\BuilderFactory;
+
+        $strings = array();
+        foreach (self::$strings as $key => $string) {
+            $strings[] = new PhpParser\Node\Expr\ArrayItem(
+                new PhpParser\Node\Scalar\String(base64_encode($string)),
+                new PhpParser\Node\Scalar\LNumber($key)
+            );
+        }
+
+        $stringFun = $factory
+            ->function('MyStrings')
+            ->addParam($factory->param('offset'))
+            ->addStmts(array(
+                new PhpParser\Node\Expr\Assign(new PhpParser\Node\Expr\Variable('strings'), new PhpParser\Node\Expr\Array_($strings)),
+                new PhpParser\Node\Stmt\Return_(new PhpParser\Node\Expr\Ternary(
+                        new PhpParser\Node\Expr\Isset_(array(new PhpParser\Node\Expr\ArrayDimFetch(
+                                new PhpParser\Node\Expr\Variable('strings'),
+                                new PhpParser\Node\Expr\Variable('offset')
+                        ))),
+                        new PhpParser\Node\Expr\FuncCall(new PhpParser\Node\Name('base64_decode'), array(
+                            new PhpParser\Node\Arg(new PhpParser\Node\Expr\ArrayDimFetch(
+                                    new PhpParser\Node\Expr\Variable('strings'),
+                                    new PhpParser\Node\Expr\Variable('offset')
+                            ))
+                        )),
+                        new PhpParser\Node\Scalar\String('')
+                ))
+            ))
+            ->getNode();
+        array_unshift(self::$_stmts, $stringFun);
+        var_dump(self::$_stmts);
     }
 
     public static function save() {
