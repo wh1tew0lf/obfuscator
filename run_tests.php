@@ -3,6 +3,7 @@
 if (!isset($argv)) {
     echo '<pre>';
 }
+echo "START TESTS:\n";
 
 $test = isset($_GET['test']) ? $_GET['test'] : false;
 

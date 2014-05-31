@@ -1,9 +1,10 @@
 <?php
 
 /**
- * @todo Global vars
+ * @todo Global vars ($wpdb)
  * @todo Think on the using process
  * @todo Replace numbers as expressions
+ * @todo Class fields undefined
  */
 
 if (!class_exists('PhpParser\Parser')) {
@@ -34,6 +35,10 @@ class obfuscator {
     public static $call = null;
 
     public static $param = null;
+
+    public static $global = false;
+
+    public static $globalVariables = array();
 
     private static $_stmts = null;
 
@@ -72,7 +77,7 @@ class obfuscator {
         }
     }
 
-    private static function _anylizeOrder(&$tree) {
+    private static function &_anylizeOrder(&$tree) {
         if ($tree instanceof PhpParser\Node\Stmt\Class_) {
             if (self::$class !== null) {
                 self::$errors[] = 'In class "' . self::$class . '" defined class "' . $tree->name . '"';
@@ -81,15 +86,17 @@ class obfuscator {
             self::$class = $tree->name;
         }
 
-        if ((($tree instanceof PhpParser\Node\Expr\PropertyFetch) ||
-            ($tree instanceof PhpParser\Node\Expr\StaticPropertyFetch) ||
-            ($tree instanceof PhpParser\Node\Stmt\PropertyProperty)))
-        {
+        if ($tree instanceof PhpParser\Node\Stmt\PropertyProperty) {
             self::$properties[$tree->name] = $tree->name;
+        }
+
+        if (($tree instanceof PhpParser\Node\Expr\Variable) && self::$global) {
+            self::$globalVariables[$tree->name] = $tree->name;
         }
 
         if ((($tree instanceof PhpParser\Node\Expr\Variable) ||
             ($tree instanceof PhpParser\Node\Param)) &&
+            !isset(self::$globalVariables[$tree->name]) &&
             !isset(self::$unObfuscatedVariables[$tree->name]))
         {
             self::$variables[$tree->name] = $tree->name;
@@ -98,6 +105,13 @@ class obfuscator {
         if ($tree instanceof PhpParser\Node\Stmt\Function_) {
             self::$definedFunctions[$tree->name] = $tree->name;
             self::$call = $tree->name;
+        }
+
+        if ($tree instanceof PhpParser\Node\Stmt\Global_) {
+            if (self::$global) {
+                self::$errors[] = 'Global in Global';
+            }
+            self::$global = true;
         }
 
         if ($tree instanceof PhpParser\Node\Stmt\ClassMethod) {
@@ -145,12 +159,18 @@ class obfuscator {
                         self::$errors[] = 'Undefined tree element!';
                     }
                 }
-                if (is_array($leaf)) {
+                if (is_object($tree)) {
                     $tree->{$node} = self::_anylizeOrder($leaf);
+                } elseif(is_array($tree)) {
+                    $tree[$node] = self::_anylizeOrder($leaf);
                 } else {
-                    self::_anylizeOrder($leaf);
+                    self::$errors[] = 'Undefined tree element!';
                 }
             }
+        }
+
+        if ($tree instanceof PhpParser\Node\Stmt\Global_) {
+            self::$global = false;
         }
 
         if ($tree instanceof PhpParser\Node\Param) {
@@ -184,6 +204,8 @@ class obfuscator {
         var_dump(self::$definedDynamicMethods);
         var_dump(self::$definedStaticMethods);*/
         //var_dump(self::$strings);
+        /*var_dump(self::$properties);
+        var_dump(self::$variables);*/
         //var_dump(self::$_stmts);
     }
 
@@ -191,7 +213,7 @@ class obfuscator {
         return '_' . substr(md5($name),1, 4) . substr(md5($name), 7, 11) . uniqid();
     }
 
-    private static function _obfuscateOrder(&$tree) {
+    private static function &_obfuscateOrder(&$tree) {
         if ((($tree instanceof PhpParser\Node\Stmt\Function_) ||
             ($tree instanceof PhpParser\Node\Expr\FuncCall)) &&
             isset(self::$definedFunctions[(string)$tree->name]))
@@ -240,13 +262,26 @@ class obfuscator {
         if (is_array($tree) || is_object($tree)) {
             foreach($tree as $node => &$leaf) {
                 if ((self::$param === null) && ($leaf instanceof PhpParser\Node\Scalar\String)) {
-                    $tree->{$node} = new PhpParser\Node\Expr\FuncCall(new PhpParser\Node\Name('MyStrings'), array(
+                    $string = new PhpParser\Node\Expr\FuncCall(new PhpParser\Node\Name('MyStrings'), array(
                         new PhpParser\Node\Arg(new PhpParser\Node\Scalar\LNumber(
                             (int)$leaf->getAttribute('myid', array_search($leaf->value, self::$strings))
                         ))
                     ));
+                    if (is_object($tree)) {
+                        $tree->{$node} = $leaf = &$string;
+                    } elseif (is_array($tree)) {
+                        $tree[$node] = $leaf = &$string;
+                    } else {
+                        self::$errors[] = 'Undefined tree element!';
+                    }
                 } else {
-                    self::_obfuscateOrder($leaf);
+                    if (is_object($tree)) {
+                        $tree->{$node} = self::_obfuscateOrder($leaf);
+                    } elseif(is_array($tree)) {
+                        $tree[$node] = self::_obfuscateOrder($leaf);
+                    } else {
+                        self::$errors[] = 'Undefined tree element!';
+                    }
                 }
             }
         }
@@ -254,11 +289,16 @@ class obfuscator {
         if ($tree instanceof PhpParser\Node\Param) {
             self::$param = null;
         }
+        return $tree;
     }
 
     public static function obfuscate($code = null) {
         foreach (self::$variables as &$variable) {
             $variable = self::encodeName($variable);
+        }
+
+        foreach (self::$properties as &$property) {
+            $property = self::encodeName($property);
         }
 
         foreach (self::$definedFunctions as &$function) {
