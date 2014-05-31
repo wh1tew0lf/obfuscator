@@ -25,6 +25,10 @@ if (is_dir($testsDir)) {
 
                 file_put_contents($resultFile, obfuscator::save());
 
+                if (obfuscator::hasErrors()) {
+                    var_dump(obfuscator::$errors);
+                }
+
                 ob_start();
                 passthru("php -f {$testsDir}{$file}", $originalRet);
                 $originalOut = ob_get_clean();

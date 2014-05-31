@@ -3,7 +3,6 @@
 /**
  * @todo Global vars
  * @todo Think on the using process
- * @todo Strings rename too
  * @todo Replace numbers as expressions
  */
 
@@ -123,19 +122,34 @@ class obfuscator {
         }
 
         if ((self::$param === null) && ($tree instanceof PhpParser\Node\Scalar\String)) {
+            $tree->setAttribute('myid', count(self::$strings));
             self::$strings[] = $tree->value;
         }
 
         if (is_array($tree) || is_object($tree)) {
-            foreach($tree as &$leaf) {
+            foreach($tree as $node => &$leaf) {
                 if ($leaf instanceof PhpParser\Node\Scalar\Encapsed) {
+                    $concat = false;
                     foreach ($leaf->parts as &$part) {
-                        if (is_string($part)) {
-                            self::$strings[] = $part;
+                        if ($concat === false) {
+                            $concat = is_string($part) ? new PhpParser\Node\Scalar\String($part) : $part;
+                        } else {
+                            $concat = new PhpParser\Node\Expr\BinaryOp\Concat($concat, is_string($part) ? new PhpParser\Node\Scalar\String($part) : $part);
                         }
                     }
+                    if (is_object($tree)) {
+                        $tree->{$node} = $leaf = &$concat;
+                    } elseif (is_array($tree)) {
+                        $tree[$node] = $leaf = &$concat;
+                    } else {
+                        self::$errors[] = 'Undefined tree element!';
+                    }
                 }
-                self::_anylizeOrder($leaf);
+                if (is_array($leaf)) {
+                    $tree->{$node} = self::_anylizeOrder($leaf);
+                } else {
+                    self::_anylizeOrder($leaf);
+                }
             }
         }
 
@@ -151,6 +165,7 @@ class obfuscator {
         if ($tree instanceof PhpParser\Node\Stmt\Class_) {
             self::$class = null;
         }
+        return $tree;
     }
 
     public static function anylize($code = null) {
@@ -168,7 +183,7 @@ class obfuscator {
         var_dump(self::$definedFunctions);
         var_dump(self::$definedDynamicMethods);
         var_dump(self::$definedStaticMethods);*/
-        var_dump(self::$strings);
+        //var_dump(self::$strings);
         //var_dump(self::$_stmts);
     }
 
@@ -227,26 +242,10 @@ class obfuscator {
                 if ((self::$param === null) && ($leaf instanceof PhpParser\Node\Scalar\String)) {
                     $tree->{$node} = new PhpParser\Node\Expr\FuncCall(new PhpParser\Node\Name('MyStrings'), array(
                         new PhpParser\Node\Arg(new PhpParser\Node\Scalar\LNumber(
-                            (int)array_search($leaf->value, self::$strings)
+                            (int)$leaf->getAttribute('myid', array_search($leaf->value, self::$strings))
                         ))
                     ));
                 } else {
-                    if ($leaf instanceof PhpParser\Node\Scalar\Encapsed) {
-                        //Replace Encapsed to concat may be...
-                    }
-
-                    /*foreach ($leaf->parts as $index => $part) {
-                        if (is_string($part)) {
-                            self::$strings[] = $part;
-                        }
-                    }
-
-                    //var_dump($node);
-                    $tree->{$node} = new PhpParser\Node\Expr\FuncCall(new PhpParser\Node\Name('MyStrings'), array(
-                        new PhpParser\Node\Arg(new PhpParser\Node\Scalar\LNumber(
-                            (int)array_search($leaf->value, self::$strings)
-                        ))
-                    ));*/
                     self::_obfuscateOrder($leaf);
                 }
             }
@@ -315,7 +314,7 @@ class obfuscator {
             ))
             ->getNode();
         array_unshift(self::$_stmts, $stringFun);
-        var_dump(self::$_stmts);
+        //var_dump(self::$_stmts);
     }
 
     public static function save() {
@@ -325,6 +324,10 @@ class obfuscator {
         } else {
             return '<?php';
         }
+    }
+
+    public static function hasErrors() {
+        return !empty(self::$errors);
     }
 
     public static function clearState() {
