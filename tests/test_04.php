@@ -34,6 +34,10 @@ function encode($str) {
 }
 
 class TheTest {
+    public $field1 = 'field1';
+    public static $field2 = 'field2';
+
+
     public function show($var = 'some text2') {
         echo "$var\n";
     }

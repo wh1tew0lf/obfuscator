@@ -5,61 +5,61 @@
 }
 class A
 {
-    public $_d63775668ed6d415389c7e764115 = 60;
-    public static $_29424780e223b215389c7e76415a = 0;
+    public $_d63775668ed6d415389ca9ec5901 = 60;
+    public static $_29424780e223b215389ca9ec595a = 0;
     public function __construct()
     {
         echo MyStrings(15);
-        self::$_29424780e223b215389c7e76415a++;
+        self::$_29424780e223b215389ca9ec595a++;
     }
-    public function _f6223962daec2635389c7e7641a1()
+    public function _f6223962daec2635389ca9ec5998()
     {
         echo MyStrings(16);
     }
     public function __destruct()
     {
-        self::$_29424780e223b215389c7e76415a--;
+        self::$_29424780e223b215389ca9ec595a--;
     }
 }
 class B extends A
 {
-    public function _f6223962daec2635389c7e7641a1()
+    public function _f6223962daec2635389ca9ec5998()
     {
         echo MyStrings(17);
     }
-    public function _f4b14694d49e3be5389c7e7641e5()
+    public function _f4b14694d49e3be5389ca9ec59d2()
     {
-        return self::$_29424780e223b215389c7e76415a;
+        return self::$_29424780e223b215389ca9ec595a;
     }
 }
 class C extends B
 {
-    public $_d63775668ed6d415389c7e764115 = 16;
-    public function _f4b14694d49e3be5389c7e7641e5()
+    public $_d63775668ed6d415389ca9ec5901 = 16;
+    public function _f4b14694d49e3be5389ca9ec59d2()
     {
         return parent::method2() + 1;
     }
-    public static function _bcca39d7a4c54ff5389c7e76422b()
+    public static function _bcca39d7a4c54ff5389ca9ec5a0c()
     {
-        echo self::$_29424780e223b215389c7e76415a . MyStrings(18);
+        echo self::$_29424780e223b215389ca9ec595a . MyStrings(18);
     }
-    public function __get($_0689cc450442b635389c7e763ffa)
+    public function __get($_0689cc450442b635389ca9ec5816)
     {
-        if ($_0689cc450442b635389c7e763ffa == MyStrings(19)) {
+        if ($_0689cc450442b635389ca9ec5816 == MyStrings(19)) {
             return MyStrings(20);
         }
         return null;
     }
 }
-$_cc179c0f1b6a8315389c7e764044 = new A();
-echo MyStrings(21) . A::$_29424780e223b215389c7e76415a . MyStrings(22);
-$_cc179c0f1b6a8315389c7e764044->_f6223962daec2635389c7e7641a1();
-$_cc179c0f1b6a8315389c7e764044->_d63775668ed6d415389c7e764115 = 167;
-echo MyStrings(23) . $_cc179c0f1b6a8315389c7e764044->_d63775668ed6d415389c7e764115 . MyStrings(24);
-$_2eb5ee6ae2fec3a5389c7e76408a = new B();
-$_2eb5ee6ae2fec3a5389c7e76408a->_f6223962daec2635389c7e7641a1();
-echo MyStrings(25) . $_2eb5ee6ae2fec3a5389c7e76408a->_f4b14694d49e3be5389c7e7641e5() . MyStrings(26);
-$_a8a009d37b737955389c7e7640ce = new C();
-echo MyStrings(27) . $_a8a009d37b737955389c7e7640ce->_d63775668ed6d415389c7e764115 . MyStrings(28);
-echo MyStrings(29) . $_a8a009d37b737955389c7e7640ce->parent_age . MyStrings(30);
-C::_bcca39d7a4c54ff5389c7e76422b();
+$_cc179c0f1b6a8315389ca9ec5853 = new A();
+echo MyStrings(21) . A::$_29424780e223b215389ca9ec595a . MyStrings(22);
+$_cc179c0f1b6a8315389ca9ec5853->_f6223962daec2635389ca9ec5998();
+$_cc179c0f1b6a8315389ca9ec5853->_d63775668ed6d415389ca9ec5901 = 167;
+echo MyStrings(23) . $_cc179c0f1b6a8315389ca9ec5853->_d63775668ed6d415389ca9ec5901 . MyStrings(24);
+$_2eb5ee6ae2fec3a5389ca9ec588c = new B();
+$_2eb5ee6ae2fec3a5389ca9ec588c->_f6223962daec2635389ca9ec5998();
+echo MyStrings(25) . $_2eb5ee6ae2fec3a5389ca9ec588c->_f4b14694d49e3be5389ca9ec59d2() . MyStrings(26);
+$_a8a009d37b737955389ca9ec58c6 = new C();
+echo MyStrings(27) . $_a8a009d37b737955389ca9ec58c6->_d63775668ed6d415389ca9ec5901 . MyStrings(28);
+echo MyStrings(29) . $_a8a009d37b737955389ca9ec58c6->parent_age . MyStrings(30);
+C::_bcca39d7a4c54ff5389ca9ec5a0c();

@@ -9,6 +9,8 @@ function show($var = 'some text') {
 }
 
 class TheTest {
+    public $field1 = 'lol';
+
     public function show($var = 'some text2') {
         otherFun($var);
     }
@@ -20,9 +22,9 @@ class TheTest {
         show($globalObj->field1);
     }
 
-    /*public static function method2() {
+    public static function method2() {
         echo "TheTest::method2\n";
-    }*/
+    }
 }
 
 show('Increment once');

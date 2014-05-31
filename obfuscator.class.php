@@ -38,6 +38,8 @@ class obfuscator {
 
     public static $global = false;
 
+    public static $property = false;
+
     public static $globalVariables = array();
 
     private static $_stmts = null;
@@ -233,6 +235,13 @@ class obfuscator {
             $tree->name = self::$properties[$tree->name];
         }
 
+        if ($tree instanceof PhpParser\Node\Stmt\PropertyProperty) {
+            if (self::$property) {
+                self::$errors[] = 'Property in Property';
+            }
+            self::$property = true;
+        }
+
         if ((($tree instanceof PhpParser\Node\Expr\Variable) ||
             ($tree instanceof PhpParser\Node\Param)) &&
             isset(self::$variables[$tree->name]))
@@ -261,7 +270,7 @@ class obfuscator {
 
         if (is_array($tree) || is_object($tree)) {
             foreach($tree as $node => &$leaf) {
-                if ((self::$param === null) && ($leaf instanceof PhpParser\Node\Scalar\String)) {
+                if (!self::$property && (self::$param === null) && ($leaf instanceof PhpParser\Node\Scalar\String)) {
                     $string = new PhpParser\Node\Expr\FuncCall(new PhpParser\Node\Name('MyStrings'), array(
                         new PhpParser\Node\Arg(new PhpParser\Node\Scalar\LNumber(
                             (int)$leaf->getAttribute('myid', array_search($leaf->value, self::$strings))
@@ -284,6 +293,10 @@ class obfuscator {
                     }
                 }
             }
+        }
+
+        if ($tree instanceof PhpParser\Node\Stmt\PropertyProperty) {
+            self::$property = false;
         }
 
         if ($tree instanceof PhpParser\Node\Param) {
