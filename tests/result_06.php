@@ -4,36 +4,37 @@
     return isset($strings[$offset]) ? base64_decode($strings[$offset]) : '';
 }
 require_once MyStrings(48);
-function _7dd11dab17d25465389ca9ee252c($_2145c704ce76dbe5389ca9ee23cf = 'some text')
+function _7dd11dab17d254653a63384365f1($_2145c704ce76dbe53a63384362af = 'some text')
 {
     global $globalVar;
-    echo $_2145c704ce76dbe5389ca9ee23cf . MyStrings(49);
+    echo $_2145c704ce76dbe53a63384362af . MyStrings(49);
     $globalVar++;
 }
 class TheTest
 {
-    public $_e41e17ec0b936e05389ca9ee24b8 = 'lol';
-    public function _7dd11dab17d25465389ca9ee2566($_2145c704ce76dbe5389ca9ee23cf = 'some text2')
+    public $_e41e17ec0b936e053a63384364de = 'lol';
+    public function _7dd11dab17d254653a633843667d($_2145c704ce76dbe53a63384362af = 'some text2')
     {
-        otherFun($_2145c704ce76dbe5389ca9ee23cf);
+        otherFun($_2145c704ce76dbe53a63384362af);
     }
-    public static function _559a9f5ac00a3ae5389ca9ee25a0($_2145c704ce76dbe5389ca9ee23cf = 'some text3')
+    public static function _559a9f5ac00a3ae53a6338436708($_2145c704ce76dbe53a63384362af = 'some text3')
     {
         global $globalVar;
         global $globalObj;
-        $globalObj->_e41e17ec0b936e05389ca9ee24b8 = MyStrings(51) . $globalVar . MyStrings(52) . $_2145c704ce76dbe5389ca9ee23cf;
-        _7dd11dab17d25465389ca9ee252c($globalObj->_e41e17ec0b936e05389ca9ee24b8);
+        $globalObj->field2 = MyStrings(51) . $globalVar . MyStrings(52) . $_2145c704ce76dbe53a63384362af;
+        _7dd11dab17d254653a63384365f1($globalObj->field2);
     }
-    public static function _f4b14694d49e3be5389ca9ee25da()
+    public static function _f4b14694d49e3be53a6338436791()
     {
         echo MyStrings(53);
     }
 }
-_7dd11dab17d25465389ca9ee252c(MyStrings(54));
-_7dd11dab17d25465389ca9ee252c(MyStrings(55));
-_7dd11dab17d25465389ca9ee252c($globalObj->_e41e17ec0b936e05389ca9ee24b8);
-$_fdc093412ce55f05389ca9ee240b = new TheTest();
-$_fdc093412ce55f05389ca9ee240b->_7dd11dab17d25465389ca9ee2566();
-TheTest::_559a9f5ac00a3ae5389ca9ee25a0(MyStrings(56));
-$globalObj->_e41e17ec0b936e05389ca9ee24b8 = MyStrings(57);
-TheTest::_559a9f5ac00a3ae5389ca9ee25a0(MyStrings(58));
+_7dd11dab17d254653a63384365f1(MyStrings(54));
+_7dd11dab17d254653a63384365f1(MyStrings(55));
+_7dd11dab17d254653a63384365f1($globalObj->field2);
+$_fdc093412ce55f053a6338436340 = new TheTest();
+$_fdc093412ce55f053a6338436340->_7dd11dab17d254653a633843667d();
+TheTest::_559a9f5ac00a3ae53a6338436708(MyStrings(56));
+$globalObj->field1 = MyStrings(57);
+TheTest::_559a9f5ac00a3ae53a6338436708(MyStrings(58));
+A::method3();

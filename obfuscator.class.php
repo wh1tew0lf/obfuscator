@@ -84,7 +84,7 @@ class obfuscator {
             if (self::$class !== null) {
                 self::$errors[] = 'In class "' . self::$class . '" defined class "' . $tree->name . '"';
             }
-            self::$classes[$tree->name] = isset($tree->extends->parts) ? $tree->extends->parts : $tree->extends;
+            self::$classes[$tree->name] = isset($tree->extends->parts) ? $tree->extends->parts : '';//$tree->extends;
             self::$class = $tree->name;
         }
 
@@ -208,7 +208,8 @@ class obfuscator {
         //var_dump(self::$strings);
         /*var_dump(self::$properties);
         var_dump(self::$variables);*/
-        //var_dump(self::$_stmts);
+        //echo '<pre>';
+        //var_export(self::$_stmts);
     }
 
     public static function encodeName($name) {
@@ -227,9 +228,15 @@ class obfuscator {
             }
         }
 
-        if ((($tree instanceof PhpParser\Node\Expr\PropertyFetch) ||
-            ($tree instanceof PhpParser\Node\Expr\StaticPropertyFetch) ||
-            ($tree instanceof PhpParser\Node\Stmt\PropertyProperty)) &&
+        /*if ($tree instanceof PhpParser\Node\Expr\StaticPropertyFetch) {
+            var_dump((string)$tree->class,isset(self::$classes[(string)$tree->class]), self::$classes);
+        }*/
+        
+        if (((($tree instanceof PhpParser\Node\Expr\PropertyFetch) && 
+              !isset(self::$globalVariables[$tree->var->name])) ||
+             (($tree instanceof PhpParser\Node\Expr\StaticPropertyFetch) &&
+              isset(self::$classes[(string)$tree->class])) ||
+             ($tree instanceof PhpParser\Node\Stmt\PropertyProperty)) &&
             isset(self::$properties[$tree->name]))
         {
             $tree->name = self::$properties[$tree->name];
@@ -247,16 +254,17 @@ class obfuscator {
             isset(self::$variables[$tree->name]))
         {
             $tree->name = self::$variables[$tree->name];
-        }
+        }        
 
         if (((($tree instanceof PhpParser\Node\Stmt\ClassMethod) && $tree->isStatic()) ||
-            ($tree instanceof PhpParser\Node\Expr\StaticCall)) &&
-            isset(self::$definedStaticMethods[$tree->name])) {
-            $tree->name = self::$definedStaticMethods[$tree->name];
+             (($tree instanceof PhpParser\Node\Expr\StaticCall) &&
+              isset(self::$classes[(string)$tree->class]))) &&
+             isset(self::$definedStaticMethods[$tree->name])) {
+                $tree->name = self::$definedStaticMethods[$tree->name];
         }
 
         if (((($tree instanceof PhpParser\Node\Stmt\ClassMethod) && !$tree->isStatic()) ||
-            ($tree instanceof PhpParser\Node\Expr\MethodCall)) &&
+             ($tree instanceof PhpParser\Node\Expr\MethodCall)) &&
             isset(self::$definedDynamicMethods[$tree->name])) {
             $tree->name = self::$definedDynamicMethods[$tree->name];
         }
@@ -325,6 +333,8 @@ class obfuscator {
         foreach (self::$definedStaticMethods as &$method) {
             $method = self::encodeName($method);
         }
+
+        self::$classes['self'] = '';
 
         if ($code !== null) {
             self::$_stmts = self::loadCode($code);

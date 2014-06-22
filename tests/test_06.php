@@ -18,8 +18,8 @@ class TheTest {
     public static function staticShow($var = 'some text3') {
         global $globalVar;
         global $globalObj;
-        $globalObj->field1 = "Test#{$globalVar}: $var";
-        show($globalObj->field1);
+        $globalObj->field2 = "Test#{$globalVar}: $var";
+        show($globalObj->field2);
     }
 
     public static function method2() {
@@ -29,11 +29,11 @@ class TheTest {
 
 show('Increment once');
 show('Increment twice');
-show($globalObj->field1);
+show($globalObj->field2);
 
 $th = new TheTest();
 $th->show();
 TheTest::staticShow('Message');
 $globalObj->field1 = 'Sting';
 TheTest::staticShow('Message');
-A::method2();
+A::method3();
