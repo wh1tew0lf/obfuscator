@@ -1,10 +1,12 @@
 <?php
 
 /**
- * @todo Global vars ($wpdb)
  * @todo Think on the using process
  * @todo Replace numbers as expressions
  * @todo Class fields undefined
+ * 1) AnalizeOrder make simplier (break into many methods)
+ * 2) Anylize shouldn't change code
+ * 3) ObfuscateOrder make simplier (break into many methods)
  */
 
 if (!class_exists('PhpParser\Parser')) {
@@ -12,6 +14,7 @@ if (!class_exists('PhpParser\Parser')) {
 }
 
 class obfuscator {
+
     public static $errors = array();
 
     public static $parser = null;
@@ -228,11 +231,7 @@ class obfuscator {
             }
         }
 
-        /*if ($tree instanceof PhpParser\Node\Expr\StaticPropertyFetch) {
-            var_dump((string)$tree->class,isset(self::$classes[(string)$tree->class]), self::$classes);
-        }*/
-        
-        if (((($tree instanceof PhpParser\Node\Expr\PropertyFetch) && 
+        if (((($tree instanceof PhpParser\Node\Expr\PropertyFetch) &&
               !isset(self::$globalVariables[$tree->var->name])) ||
              (($tree instanceof PhpParser\Node\Expr\StaticPropertyFetch) &&
               isset(self::$classes[(string)$tree->class])) ||
@@ -254,7 +253,7 @@ class obfuscator {
             isset(self::$variables[$tree->name]))
         {
             $tree->name = self::$variables[$tree->name];
-        }        
+        }
 
         if (((($tree instanceof PhpParser\Node\Stmt\ClassMethod) && $tree->isStatic()) ||
              (($tree instanceof PhpParser\Node\Expr\StaticCall) &&
@@ -314,24 +313,17 @@ class obfuscator {
     }
 
     public static function obfuscate($code = null) {
-        foreach (self::$variables as &$variable) {
-            $variable = self::encodeName($variable);
-        }
-
-        foreach (self::$properties as &$property) {
-            $property = self::encodeName($property);
-        }
-
-        foreach (self::$definedFunctions as &$function) {
-            $function = self::encodeName($function);
-        }
-
-        foreach (self::$definedDynamicMethods as &$method) {
-            $method = self::encodeName($method);
-        }
-
-        foreach (self::$definedStaticMethods as &$method) {
-            $method = self::encodeName($method);
+        $containers = array(
+            &self::$variables,
+            &self::$properties,
+            &self::$definedFunctions,
+            &self::$definedDynamicMethods,
+            &self::$definedStaticMethods
+        );
+        foreach($containers as &$container) {
+            foreach ($container as &$entry) {
+                $entry = self::encodeName($entry);
+            }
         }
 
         self::$classes['self'] = '';
@@ -346,6 +338,10 @@ class obfuscator {
             self::$errors[] = 'Anylize without code';
         }
 
+        self::addStringFun();
+    }
+
+    public static function addStringFun() {
         $factory = new PhpParser\BuilderFactory;
 
         $strings = array();
@@ -362,22 +358,21 @@ class obfuscator {
             ->addStmts(array(
                 new PhpParser\Node\Expr\Assign(new PhpParser\Node\Expr\Variable('strings'), new PhpParser\Node\Expr\Array_($strings)),
                 new PhpParser\Node\Stmt\Return_(new PhpParser\Node\Expr\Ternary(
-                        new PhpParser\Node\Expr\Isset_(array(new PhpParser\Node\Expr\ArrayDimFetch(
+                    new PhpParser\Node\Expr\Isset_(array(new PhpParser\Node\Expr\ArrayDimFetch(
+                            new PhpParser\Node\Expr\Variable('strings'),
+                            new PhpParser\Node\Expr\Variable('offset')
+                    ))),
+                    new PhpParser\Node\Expr\FuncCall(new PhpParser\Node\Name('base64_decode'), array(
+                        new PhpParser\Node\Arg(new PhpParser\Node\Expr\ArrayDimFetch(
                                 new PhpParser\Node\Expr\Variable('strings'),
                                 new PhpParser\Node\Expr\Variable('offset')
-                        ))),
-                        new PhpParser\Node\Expr\FuncCall(new PhpParser\Node\Name('base64_decode'), array(
-                            new PhpParser\Node\Arg(new PhpParser\Node\Expr\ArrayDimFetch(
-                                    new PhpParser\Node\Expr\Variable('strings'),
-                                    new PhpParser\Node\Expr\Variable('offset')
-                            ))
-                        )),
-                        new PhpParser\Node\Scalar\String('')
+                        ))
+                    )),
+                    new PhpParser\Node\Scalar\String('')
                 ))
             ))
             ->getNode();
         array_unshift(self::$_stmts, $stringFun);
-        //var_dump(self::$_stmts);
     }
 
     public static function save() {
