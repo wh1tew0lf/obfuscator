@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * Test for global vars replacement
+ */
 require_once 'includes.php';
 
 function show($var = 'some text') {
@@ -10,6 +12,7 @@ function show($var = 'some text') {
 
 class TheTest {
     public $field1 = 'lol';
+    public static $field2 = 'static';
 
     public function show($var = 'some text2') {
         otherFun($var);
@@ -34,6 +37,7 @@ show($globalObj->field2);
 $th = new TheTest();
 $th->show();
 TheTest::staticShow('Message');
-$globalObj->field1 = 'Sting';
+$globalObj->field1 = 'String';
+TheTest::$field2 = 'String2';
 TheTest::staticShow('Message');
 A::method3();

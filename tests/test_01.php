@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * Test for variable-names replacement
+ */
 $variable1 = 'Variable1';
 
 $variable2 = "$variable1 ++";

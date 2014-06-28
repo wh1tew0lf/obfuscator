@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * Test for function name replacement
+ */
 $var = 0;
 
 function function1() {

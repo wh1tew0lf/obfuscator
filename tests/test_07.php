@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * Test for global methods replacement
+ */
 require_once 'includes.php';
 
 class TheTest {

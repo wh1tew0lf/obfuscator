@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * Test for string obfuscation
+ */
 $string1 = 'Test String';
 
 $string2 = "This\tis text\n";

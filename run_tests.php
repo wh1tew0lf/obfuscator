@@ -17,17 +17,20 @@ if (is_dir($testsDir)) {
                 echo "Run test file '{$file}'\n";
                 $resultFile = "{$testsDir}result_{$matches[1]}.php";
 
-                //ob_start();
+                ob_start();
                 obfuscator::clearState();
-                obfuscator::loadCode(file_get_contents($testsDir . $file));
+                obfuscator::loadCode($testsDir . $file);
                 obfuscator::anylize();
                 obfuscator::obfuscate();
-                //ob_end_clean();
+                ob_end_clean();
 
-                file_put_contents($resultFile, obfuscator::save());
+                obfuscator::saveCode($resultFile);
 
                 if (obfuscator::hasErrors()) {
-                    var_dump(obfuscator::$errors);
+                    echo "There are was errors:\n";
+                    foreach(obfuscator::getErrors() as $error) {
+                        echo "{$error}\n";
+                    }
                 }
 
                 ob_start();

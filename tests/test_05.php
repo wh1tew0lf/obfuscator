@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * Test for number replacement
+ */
 $int1 = 16;
 
 $float1 = 35.5;

@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * Test for class names and methods replacement
+ */
 class A {
     public $age = 60;
     public static $count = 0;
