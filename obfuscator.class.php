@@ -7,6 +7,7 @@
  * 1) AnalizeOrder make simplier (break into many methods)
  * 2) Anylize shouldn't change code
  * 3) ObfuscateOrder make simplier (break into many methods)
+ * 4) Number should expand to expressions
  */
 
 if (!class_exists('PhpParser\Parser')) {
