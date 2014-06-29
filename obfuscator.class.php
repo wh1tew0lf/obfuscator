@@ -70,6 +70,8 @@ class obfuscator {
 
     private static $index = 0;
 
+    private static $types = array();
+
     private static function _parser() {
         if (self::$parser === null) {
             self::$parser = new PhpParser\Parser(new PhpParser\Lexer);
@@ -133,7 +135,7 @@ class obfuscator {
             if (self::$class !== null) {
                 self::$errors[] = 'In class "' . self::$class . '" defined class "' . $tree->name . '"';
             }
-            self::$classes[$tree->name] = isset($tree->extends->parts) ? $tree->extends->parts : '';//$tree->extends;
+            self::$classes[$tree->name] = isset($tree->extends->parts) ? (string)$tree->extends : '';
             self::$class = $tree->name;
         }
 
@@ -289,6 +291,46 @@ class obfuscator {
         return '_' . self::$index++;
     }
 
+    private static function isMethodExists($className, $methodName) {
+        if (isset(self::$classes[$className])) {
+            return  (isset(self::$dynamicMethods[$className]) &&
+                    isset(self::$dynamicMethods[$className][$methodName])) ||
+                    self::isMethodExists(self::$classes[$className], $methodName);
+        }
+        return false;
+    }
+
+    private static function getMethod($className, $methodName) {
+        if (isset(self::$classes[$className])) {
+            if (isset(self::$dynamicMethods[$className][$methodName])) {
+                return self::$dynamicMethods[$className][$methodName];
+            } else {
+                return self::getMethod(self::$classes[$className], $methodName);
+            }
+        }
+        return $methodName;
+    }
+
+    private static function isPropertyExists($className, $propertyName) {
+        if (isset(self::$classes[$className])) {
+            return (isset(self::$dynamicProperties[$className]) &&
+                    isset(self::$dynamicProperties[$className][$propertyName])) ||
+                    self::isPropertyExists(self::$classes[$className], $propertyName);
+        }
+        return false;
+    }
+
+    private static function getProperty($className, $propertyName) {
+        if (isset(self::$classes[$className])) {
+            if (isset(self::$dynamicProperties[$className][$propertyName])) {
+                return self::$dynamicProperties[$className][$propertyName];
+            } else {
+                return self::getProperty(self::$classes[$className], $propertyName);
+            }
+        }
+        return $propertyName;
+    }
+
     private static function &_obfuscateOrder(&$tree) {
         if ($tree instanceof PhpParser\Node\Stmt\Class_) {
             if (self::$class !== null) {
@@ -306,6 +348,11 @@ class obfuscator {
             } else {
                 $tree->name = self::$functions[$tree->name];
             }
+        }
+
+        if (($tree instanceof PhpParser\Node\Expr\Assign) &&
+            ($tree->expr instanceof PhpParser\Node\Expr\New_)) {
+            self::$types[$tree->var->name] = (string)$tree->expr->class;
         }
 
         if ($tree instanceof PhpParser\Node\Stmt\Property) {
@@ -328,12 +375,17 @@ class obfuscator {
 
         if (($tree instanceof PhpParser\Node\Expr\PropertyFetch) &&
             !isset(self::$globalVariables[$tree->var->name])) {
-            foreach(self::$dynamicProperties as &$names) {
+            if (isset(self::$types[$tree->var->name]) &&
+                self::isPropertyExists(self::$types[$tree->var->name], $tree->name)) {
+                $tree->name = self::getProperty(self::$types[$tree->var->name],$tree->name);
+                //$tree->name = self::$dynamicProperties[self::$types[$tree->var->name]][$tree->name];
+            }
+            /*foreach(self::$dynamicProperties as &$names) {
                 if (isset($names[$tree->name])) {
                     $tree->name = $names[$tree->name];
                     break;
                 }
-            }
+            }*/
         }
 
         if (($tree instanceof PhpParser\Node\Expr\StaticPropertyFetch) &&
@@ -378,11 +430,16 @@ class obfuscator {
         }
 
         if ($tree instanceof PhpParser\Node\Expr\MethodCall) {
-            foreach(self::$dynamicMethods as &$names) {
+            if (isset(self::$types[$tree->var->name]) &&
+                self::isMethodExists(self::$types[$tree->var->name], $tree->name)) {
+                $tree->name = self::getMethod(self::$types[$tree->var->name],$tree->name);
+                //$tree->name = self::$dynamicMethods[self::$types[$tree->var->name]][$tree->name];
+            }
+            /*foreach(self::$dynamicMethods as &$names) {
                 if (isset($names[$tree->name])) {
                     $tree->name = $names[$tree->name];
                 }
-            }
+            }*/
         }
 
         if ($tree instanceof PhpParser\Node\Param) {

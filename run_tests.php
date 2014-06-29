@@ -46,6 +46,8 @@ if (is_dir($testsDir)) {
                     echo "Return values mismatch: {$originalRet} != {$obfuscatedRet}\n";
                 } elseif ($originalOut != $obfuscatedOut) {
                     echo "Out mismatch:\nORIGINAL:\n{$originalOut}\n\nOBFUSCATED:\n{$obfuscatedOut}\n";
+                } elseif ($originalRet != 0) {
+                    echo "Test incorrect #{$matches[1]}\n";
                 } else {
                     $testPassed = true;
                 }

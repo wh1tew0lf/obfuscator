@@ -17,6 +17,10 @@ class TheTest {
     public static function method2() {
         echo "TheTest::method2\n";
     }
+
+    public function method1() {
+        echo "This should broke test\n";
+    }
 }
 
 echo $globalObj->field1 . "\n";
@@ -25,3 +29,8 @@ $th = new TheTest();
 TheTest::staticShow('Message');
 TheTest::method2('Message');
 A::method2();
+$a = new A();
+$a->method1('A method:');
+$th->method1();
+$th2 = $th;
+$th2->method1();

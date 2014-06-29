@@ -32,7 +32,7 @@ class TheTest {
 
 show('Increment once');
 show('Increment twice');
-show($globalObj->field2);
+show($globalObj->field1);
 
 $th = new TheTest();
 $th->show();
@@ -40,4 +40,4 @@ TheTest::staticShow('Message');
 $globalObj->field1 = 'String';
 TheTest::$field2 = 'String2';
 TheTest::staticShow('Message');
-A::method3();
+A::method2();
