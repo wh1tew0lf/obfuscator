@@ -87,7 +87,23 @@ class obfuscator {
     
     private static $unObFunctions = array();
     
-    private static $unObVariables = array('this' => 'this');
+    private static $unObVariables = array(
+        'this' => 'this',
+        'GLOBALS',
+        '_GET',
+        '_POST',
+        '_SERVER',
+        '_FILES',
+        '_REQUEST',
+        '_SESSION',
+        '_​ENV',
+        '_​COOKIE',
+        'php_​errormsg',
+        'HTTP_​RAW_​POST_​DATA',
+        'http_​response_​header',
+        'argc',
+        'argv'
+    );
     
     /**
      * @var string name of strings function 
