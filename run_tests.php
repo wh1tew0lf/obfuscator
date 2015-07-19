@@ -15,7 +15,7 @@ if (is_dir($testsDir)) {
         foreach ($files as &$file) {
             if (preg_match('/^test_([0-9]+)\.php$/', $file, $matches) && (!is_numeric($test) || strstr($file, (string)$test))) {
                 echo "Run test file '{$file}'\n";
-                $resultFile = "{$testsDir}result_{$matches[1]}.php";
+                $resultFile = "{$testsDir}res_{$matches[1]}.php";
 
                 ob_start();
                 //obfuscator::clearState();
