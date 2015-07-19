@@ -1,38 +1,39 @@
 <?php function MyStrings($offset)
 {
-    $strings = array(0 => 'VmFyaWFibGUx', 1 => 'ICsr', 2 => 'JHZhcmlhYmxlMSArKw==', 3 => 'Lg==', 4 => 'Cg==', 5 => 'IGFuZCA=', 6 => 'Cg==', 7 => 'dmFyMQ==', 8 => 'dmFyMg==', 9 => 'dmFyMw==', 10 => 'Ww==', 11 => 'XSA9PiB7', 12 => 'fQo=', 13 => 'RnVuY3Rpb24xCg==', 14 => 'Cg==', 15 => 'QSBjcmVhdGVkCg==', 16 => 'SXQgaXMgbWV0aG9kMSBmcm9tIGNsYXNzIEEK', 17 => 'SXQgaXMgbWV0aG9kMSBmcm9tIGNsYXNzIEIK', 18 => 'Cg==', 19 => 'cGFyZW50X2FnZQ==', 20 => 'RG9uJ3Qga25vdyE=', 21 => 'QSBjb3VudDog', 22 => 'Cg==', 23 => 'QSBBZ2U6IA==', 24 => 'Cg==', 25 => 'QSBhbmQgQiBjb3VudDog', 26 => 'Cg==', 27 => 'QyBBZ2U6IA==', 28 => 'Cg==', 29 => 'QyBwYXJlbnQgYWdlOiA=', 30 => 'Cg==', 31 => 'QiBtZXRob2QgZnJvbSBDOiA=', 32 => 'Cg==', 33 => 'QiBnZXQgcGFyZW50IGFnZTog', 34 => 'Cg==', 35 => 'VGVzdCBTdHJpbmc=', 36 => 'VGhpcwlpcyB0ZXh0Cg==', 37 => 'IEFORCA=', 38 => 'ICAgIEhlcmVkb2MgdGV4dAogICAg', 39 => 'ICAgIE5vd2RvYyB0ZXh0CiAgICAkc3RyaW5nMQ==', 40 => 'RW5jb2RlZCBzdHJpbmc=', 41 => 'VGVzdA==', 42 => 'IGNvbmNhdA==', 43 => 'ISEhIQ==', 44 => 'ISEhIQ==', 45 => 'Cg==', 46 => 'dGV4dA==', 47 => '', 48 => 'ZmllbGQx', 49 => 'ZmllbGQy', 50 => 'Cg==', 51 => 'Cg==', 52 => 'aW5jbHVkZXMucGhw', 53 => 'Cg==', 54 => 'bG9s', 55 => 'c3RhdGlj', 56 => 'VGVzdCM=', 57 => 'OiA=', 58 => 'VGhlVGVzdDo6bWV0aG9kMgo=', 59 => 'SW5jcmVtZW50IG9uY2U=', 60 => 'SW5jcmVtZW50IHR3aWNl', 61 => 'TWVzc2FnZQ==', 62 => 'U3RyaW5n', 63 => 'U3RyaW5nMg==', 64 => 'TWVzc2FnZQ==', 65 => 'aW5jbHVkZXMucGhw', 66 => 'bG9s', 67 => 'ClRlc3Qj', 68 => 'OiA=', 69 => 'Cg==', 70 => 'VGhlVGVzdDo6bWV0aG9kMgo=', 71 => 'VGhpcyBzaG91bGQgYnJva2UgdGVzdAo=', 72 => 'Cg==', 73 => 'TWVzc2FnZQ==', 74 => 'TWVzc2FnZQ==', 75 => 'QSBtZXRob2Q6');
+    $strings = array(0 => 'VmFyaWFibGUx', 1 => 'ICsr', 2 => 'JHZhcmlhYmxlMSArKw==', 3 => 'Lg==', 4 => 'Cg==', 5 => 'IGFuZCA=', 6 => 'Cg==', 7 => 'dmFyMQ==', 8 => 'dmFyMg==', 9 => 'dmFyMw==', 10 => 'Ww==', 11 => 'XSA9PiB7', 12 => 'fQo=', 13 => 'RnVuY3Rpb24xCg==', 14 => 'Cg==', 15 => 'QSBjcmVhdGVkCg==', 16 => 'SXQgaXMgbWV0aG9kMSBmcm9tIGNsYXNzIEEo', 17 => 'KQo=', 18 => 'SXQgaXMgbWV0aG9kMSBmcm9tIGNsYXNzIEIK', 19 => 'Cg==', 20 => 'cGFyZW50X2FnZQ==', 21 => 'RG9uJ3Qga25vdyE=', 22 => 'QSBjb3VudDog', 23 => 'Cg==', 24 => 'QSBBZ2U6IA==', 25 => 'Cg==', 26 => 'QSBhbmQgQiBjb3VudDog', 27 => 'Cg==', 28 => 'QyBBZ2U6IA==', 29 => 'Cg==', 30 => 'QyBwYXJlbnQgYWdlOiA=', 31 => 'Cg==', 32 => 'QiBtZXRob2QgZnJvbSBDOiA=', 33 => 'Cg==', 34 => 'QiBnZXQgcGFyZW50IGFnZTog', 35 => 'Cg==', 36 => 'QiBjb3VudDog', 37 => 'Cg==', 38 => 'QyBtZXRob2QyOiA=', 39 => 'Cg==', 40 => 'VGVzdCBTdHJpbmc=', 41 => 'VGhpcwlpcyB0ZXh0Cg==', 42 => 'IEFORCA=', 43 => 'ICAgIEhlcmVkb2MgdGV4dAogICAg', 44 => 'ICAgIE5vd2RvYyB0ZXh0CiAgICAkc3RyaW5nMQ==', 45 => 'RW5jb2RlZCBzdHJpbmc=', 46 => 'VGVzdA==', 47 => 'IGNvbmNhdA==', 48 => 'ISEhIQ==', 49 => 'ISEhIQ==', 50 => 'Cg==', 51 => 'dGV4dA==', 52 => '', 53 => 'ZmllbGQx', 54 => 'ZmllbGQy', 55 => 'Cg==', 56 => 'Cg==', 57 => 'aW5jbHVkZXMucGhw', 58 => 'Cg==', 59 => 'bG9s', 60 => 'c3RhdGlj', 61 => 'VGVzdCM=', 62 => 'OiA=', 63 => 'VGhlVGVzdDo6bWV0aG9kMgo=', 64 => 'SW5jcmVtZW50IG9uY2U=', 65 => 'SW5jcmVtZW50IHR3aWNl', 66 => 'TWVzc2FnZQ==', 67 => 'U3RyaW5n', 68 => 'U3RyaW5nMg==', 69 => 'TWVzc2FnZQ==', 70 => 'aW5jbHVkZXMucGhw', 71 => 'bG9s', 72 => 'ClRlc3Qj', 73 => 'OiA=', 74 => 'Cg==', 75 => 'VGhlVGVzdDo6bWV0aG9kMgo=', 76 => 'VGhpcyBzaG91bGQgYnJva2UgdGVzdAo=', 77 => 'Cg==', 78 => 'TWVzc2FnZQ==', 79 => 'TWVzc2FnZQ==', 80 => 'QSBtZXRob2Q6');
     return isset($strings[$offset]) ? base64_decode($strings[$offset]) : '';
 }
 /**
  * Test for global methods replacement
  */
-require_once MyStrings(65);
+require_once MyStrings(70);
 class TheTest
 {
     public $_5 = 'lol';
-    public static function _9($_0 = 'some text3')
+    public static function _10($_0 = 'some text3')
     {
         global $globalVar;
         global $globalObj;
-        $globalObj->field1 .= MyStrings(67) . $globalVar . MyStrings(68) . $_0;
-        echo $globalObj->field1 . MyStrings(69);
+        $globalObj->field1 .= MyStrings(72) . $globalVar . MyStrings(73) . $_0;
+        echo $globalObj->field1 . MyStrings(74);
     }
-    public static function _10()
+    public static function _11()
     {
-        echo MyStrings(70);
+        echo MyStrings(75);
     }
-    public function _8()
+    public function _9()
     {
-        echo MyStrings(71);
+        echo MyStrings(76);
+        $globalVar = 15;
     }
 }
-echo $globalObj->field1 . MyStrings(72);
+echo $globalObj->field1 . MyStrings(77);
 $_1 = new TheTest();
-TheTest::_9(MyStrings(73));
-TheTest::_10(MyStrings(74));
+TheTest::_10(MyStrings(78));
+TheTest::_11(MyStrings(79));
 A::method2();
 $_2 = new A();
-$_2->method1(MyStrings(75));
-$_1->_8();
+$_2->method1(MyStrings(80));
+$_1->_9();
 $_3 = $_1;
 $_3->method1();

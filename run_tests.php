@@ -20,7 +20,7 @@ if (is_dir($testsDir)) {
                 ob_start();
                 obfuscator::clearState();
                 obfuscator::loadCode($testsDir . $file);
-                obfuscator::anylize();
+                obfuscator::analyze();
                 obfuscator::obfuscate();
                 ob_end_clean();
 

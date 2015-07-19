@@ -1,5 +1,8 @@
 <?php
-
+ini_set('xdebug.var_display_max_depth', -1);
+        ini_set('xdebug.var_display_max_children', -1);
+        ini_set('xdebug.var_display_max_data', -1);
+        
 /**
  * @todo Think on the using process
  * @todo Replace numbers as expressions
@@ -14,39 +17,72 @@ if (!class_exists('PhpParser\Parser')) {
     require_once '../PHP-Parser/lib/bootstrap.php';
 }
 
+/**
+ * Static class for obfuscate php code
+ */
 class obfuscator {
 
+    /**
+     * @var array list of errors
+     */
     private static $errors = array();
 
+    /**
+     * @var PhpParser\Parser php code parser
+     */
     private static $parser = null;
-
-    private static $variables = array();
-
+    
+    /**
+     * @var array list of classes
+     */
+    private static $classes = array();
+    
+    /**
+     * @var array list of functions
+     */
     private static $functions = array();
 
-    private static $dynamicProperties = array();
+    /**
+     * @var array list of global and local variales of file not in function or methods
+     */
+    private static $variables = array();
+    
+    /*private static $dynamicProperties = array();
 
     private static $staticProperties = array();
 
     private static $dynamicMethods = array();
 
-    private static $staticMethods = array();
+    private static $staticMethods = array();*/
 
+    /**
+     * @var array list of srtring variables values 
+     */
     private static $strings = array();
 
-    private static $classes = array();
-
+    /**
+     * @var string current class when code analyzed or obfuscated 
+     */
     private static $class = null;
 
-    private static $call = null;
+    /**
+     * @var string current callable element when code analyzed or obfuscated 
+     */
+    private static $callable = null;
 
+    /**
+     * @var string current param when code analyzed or obfuscated 
+     */
     private static $param = null;
 
+    /**
+     * @var bool global flag when code analyzed or obfuscated 
+     */
     private static $global = false;
 
     private static $property = false;
 
-    private static $globalVariables = array();
+    //private static $globalVariables = array();
 
     private static $_stmts = null;
 
@@ -68,11 +104,20 @@ class obfuscator {
         '__set_state' => '__set_state',
         '__clone' => '__clone'
     );
+    
+    /**
+     * @var string name of strings function 
+     */
+    private static $_stringsMethodName = 'MyStrings';
 
     private static $index = 0;
 
     private static $types = array();
 
+    /**
+     * Sigleton for php parser
+     * @return PhpParser\Parser
+     */
     private static function _parser() {
         if (self::$parser === null) {
             self::$parser = new PhpParser\Parser(new PhpParser\Lexer);
@@ -80,10 +125,18 @@ class obfuscator {
         return self::$parser;
     }
 
+    /**
+     * Returns was there some errors or not
+     * @return bool
+     */
     public static function hasErrors() {
         return !empty(self::$errors);
     }
 
+    /**
+     * Returns list of errors
+     * @return array
+     */
     public static function getErrors() {
         return self::$errors;
     }
@@ -93,8 +146,8 @@ class obfuscator {
         self::$parser = null;
         self::$variables = array();
         self::$functions = array();
-        self::$dynamicMethods = array();
-        self::$staticMethods = array();
+        //self::$dynamicMethods = array();
+        //self::$staticMethods = array();
         self::$classes = array();
         self::$class = null;
         self::$_stmts = null;
@@ -130,79 +183,202 @@ class obfuscator {
     public static function saveCode($filename) {
         file_put_contents($filename, self::getCode());
     }
-
-    private static function &_anylizeOrder(&$tree) {
-        if ($tree instanceof PhpParser\Node\Stmt\Class_) {
-            if (self::$class !== null) {
-                self::$errors[] = 'In class "' . self::$class . '" defined class "' . $tree->name . '"';
-            }
-            self::$classes[$tree->name] = isset($tree->extends->parts) ? (string)$tree->extends : '';
-            self::$class = $tree->name;
+    
+    /**
+     * Analyze class
+     * @param \PhpParser\Node $tree
+     */
+    private static function _analyzeClass(&$tree) {
+        if (self::$class !== null) {
+            self::$errors[] = 'In class "' . self::$class . '" defined class "' . $tree->name . '"';
         }
-
-        if ($tree instanceof PhpParser\Node\Stmt\Property) {
-            if ($tree->isStatic()) {
-                foreach($tree->props as &$leaf) {
-                    self::$staticProperties[self::$class][$leaf->name] = $leaf->name;
-                }
-            } else {
-                foreach($tree->props as &$leaf) {
-                    self::$dynamicProperties[self::$class][$leaf->name] = $leaf->name;
-                }
-            }
+        
+        self::$class = $tree->name;
+        
+        self::$classes[$tree->name] = array(
+            'extends' => isset($tree->extends->parts) ? $tree->extends->toString() : '',
+            'implements' => array_reduce($tree->implements, function($carry, $item) { 
+                $carry[] = $item->toString();
+                return $carry;  
+            }, array()),
+            'fields' => array(),
+            'methods' => array(),
+        );
+        
+        self::_goDeeper($tree);
+        
+        self::$class = null;
+    }
+    
+    /**
+     * Analyze method
+     * @param \PhpParser\Node $tree
+     */
+    private static function _analyzeMethod(&$tree) {
+        if (self::$callable !== null) {
+            self::$errors[] = 'In call "' . self::$callable . '" defined call "' . $tree->name . '"';
         }
-
-        if (($tree instanceof PhpParser\Node\Expr\Variable) && self::$global) {
-            self::$globalVariables[$tree->name] = $tree->name;
+        
+        self::$classes[self::$class]['methods'][$tree->name] = array(
+            'static' => $tree->isStatic(),
+            'public' => $tree->isPublic(),
+            'protected' => $tree->isProtected(),
+            'private' => $tree->isPrivate(),
+            'abstract' => $tree->isAbstract(),
+            'final' => $tree->isFinal(),
+            'arguments' => array(),
+            'variables' => array(),
+        );
+        
+        self::$callable = $tree->name;
+        
+        self::_goDeeper($tree);
+        
+        self::$callable = null;
+    }
+    
+    /**
+     * Analyze property
+     * @param \PhpParser\Node $tree
+     */
+    private static function _analyzeProperty(&$tree) {
+        foreach($tree->props as &$leaf) {
+            self::$classes[self::$class]['fields'][$leaf->name] = array(
+                'static' => $tree->isStatic(),
+                'public' => $tree->isPublic(),
+                'protected' => $tree->isProtected(),
+                'private' => $tree->isPrivate(),
+            );
         }
-
-        if ((($tree instanceof PhpParser\Node\Expr\Variable) ||
-            ($tree instanceof PhpParser\Node\Param)) &&
-            !isset(self::$globalVariables[$tree->name]) &&
-            !isset(self::$unObfuscatedVariables[$tree->name]))
-        {
-            self::$variables[$tree->name] = $tree->name;
+        
+        self::_goDeeper($tree);
+    }
+    
+    /**
+     * Analyze function
+     * @param \PhpParser\Node $tree
+     */
+    private static function _analyzeFunction(&$tree) {
+        if (self::$callable !== null) {
+            self::$errors[] = 'In call "' . self::$callable . '" defined call "' . $tree->name . '"';
         }
-
-        if ($tree instanceof PhpParser\Node\Stmt\Function_) {
-            self::$functions[$tree->name] = $tree->name;
-            self::$call = $tree->name;
+        
+        self::$functions[$tree->name] = array(
+            'arguments' => array(),
+            'variables' => array(),
+        );
+        
+        self::$callable = $tree->name;
+        
+        self::_goDeeper($tree);
+        
+        self::$callable = null;
+    }
+    
+    /**
+     * Analyze variable
+     * @param \PhpParser\Node $tree
+     */
+    private static function _analyzeVariable(&$tree) {
+        if (null !== self::$class) {
+            $value = isset(self::$classes[self::$class]['methods'][self::$callable]['variables'][$tree->name]) &&
+                self::$classes[self::$class]['methods'][self::$callable]['variables'][$tree->name];
+            self::$classes[self::$class]['methods'][self::$callable]['variables'][$tree->name] = $value || self::$global;
+        } elseif (null !== self::$callable) {
+            $value = isset(self::$functions[self::$callable]['variables'][$tree->name]) &&
+                self::$functions[self::$callable]['variables'][$tree->name];
+            self::$functions[self::$callable]['variables'][$tree->name] = $value || self::$global;
+        } else {
+            $value = isset(self::$variables[$tree->name]) &&
+                self::$variables[$tree->name];
+            self::$variables[$tree->name] = $value || self::$global;
         }
-
-        if ($tree instanceof PhpParser\Node\Stmt\Global_) {
-            if (self::$global) {
-                self::$errors[] = 'Global in Global';
-            }
-            self::$global = true;
+        
+        self::_goDeeper($tree);
+    }
+    
+    /**
+     * Analyze global
+     * @param \PhpParser\Node $tree
+     */
+    private static function _analyzeGlobal(&$tree) {
+        if (self::$global) {
+            self::$errors[] = 'Global in Global';
         }
-
-        if ($tree instanceof PhpParser\Node\Stmt\ClassMethod) {
-            if (!isset(self::$unObfuscatedMethods[$tree->name])) {
-                if ($tree->isStatic()) {
-                    self::$staticMethods[self::$class][$tree->name] = $tree->name;
-                } else {
-                    self::$dynamicMethods[self::$class][$tree->name] = $tree->name;
-                }
-            }
-            if (self::$call !== null) {
-                self::$errors[] = 'In call "' . self::$call . '" defined call "' . $tree->name . '"';
-            }
-            self::$call = $tree->name;
+        self::$global = true;
+        
+        self::_goDeeper($tree);
+        
+        self::$global = false;
+    }
+    
+    /**
+     * Analyze string
+     * @param \PhpParser\Node $tree
+     */
+    private static function _analyzeString(&$tree) {
+        //$tree->setAttribute('myid', count(self::$strings));
+        self::$strings[] = $tree->value;
+        self::_goDeeper($tree);
+    }
+    
+    /**
+     * Analyze param
+     * @param \PhpParser\Node $tree
+     */
+    private static function _analyzeParam(&$tree) {
+        if (self::$param !== null) {
+            self::$errors[] = 'In param "' . self::$param . '" defined param "' . $tree->name . '"';
         }
-
-        if ($tree instanceof PhpParser\Node\Param) {
-            if (self::$param !== null) {
-                self::$errors[] = 'In param "' . self::$param . '" defined param "' . $tree->name . '"';
-            }
-            self::$param = $tree->name;
+        self::$param = $tree->name;
+        
+        if (null !== self::$class) {
+            self::$classes[self::$class]['methods'][self::$callable]['arguments'][$tree->name] = $tree->name;
+        } elseif (null !== self::$callable) {
+            self::$functions[self::$callable]['arguments'][$tree->name] = $tree->name;
+        } else {
+            self::$errors[] = 'Param without callable "' . $tree->name . '"';
         }
-
-        if ((self::$param === null) && ($tree instanceof PhpParser\Node\Scalar\String)) {
-            $tree->setAttribute('myid', count(self::$strings));
-            self::$strings[] = $tree->value;
-        }
-
+        self::_analyzeVariable($tree);
+        self::$param = null;
+        
+    }
+    
+    /**
+     * Analyze function that go on next level of recursion
+     * @param \PhpParser\Node[] $tree
+     */
+    private static function _goDeeper(&$tree) {
         if (is_array($tree) || is_object($tree)) {
+            foreach($tree as &$leaf) {
+                if ($leaf instanceof PhpParser\Node\Stmt\Class_) {
+                    self::_analyzeClass($leaf);
+                } elseif($leaf instanceof PhpParser\Node\Stmt\ClassMethod) {
+                    self::_analyzeMethod($leaf);
+                } elseif($leaf instanceof PhpParser\Node\Stmt\Property) {
+                    self::_analyzeProperty($leaf);
+                } elseif($leaf instanceof PhpParser\Node\Stmt\Function_) {
+                    self::_analyzeFunction($leaf);
+                } elseif($leaf instanceof PhpParser\Node\Stmt\Global_) {
+                    self::_analyzeGlobal($leaf);
+                } elseif($leaf instanceof PhpParser\Node\Param) {
+                    self::_analyzeParam($leaf);
+                } elseif($leaf instanceof PhpParser\Node\Expr\Variable) {
+                    self::_analyzeVariable($leaf);
+                } elseif($leaf instanceof PhpParser\Node\Scalar\String) {
+                    self::_analyzeString($leaf);
+                } else {
+                    self::_goDeeper($leaf);
+                }
+            }
+        }
+    }
+    
+    /**
+     * @deprecated since version 1
+     */
+    private static function _anylizeOrder(&$tree) {
+        /*if (is_array($tree) || is_object($tree)) {
             foreach($tree as $node => &$leaf) {
                 if ($leaf instanceof PhpParser\Node\Scalar\Encapsed) {
                     $concat = false;
@@ -229,61 +405,118 @@ class obfuscator {
                     self::$errors[] = 'Undefined tree element!';
                 }
             }
-        }
-
-        if ($tree instanceof PhpParser\Node\Stmt\Global_) {
-            self::$global = false;
-        }
-
-        if ($tree instanceof PhpParser\Node\Param) {
-            self::$param = null;
-        }
-
-        if (($tree instanceof PhpParser\Node\Stmt\ClassMethod) ||
-            ($tree instanceof PhpParser\Node\Stmt\Function_)) {
-            self::$call = null;
-        }
-
-        if ($tree instanceof PhpParser\Node\Stmt\Class_) {
-            self::$class = null;
-        }
-        return $tree;
+        }*/
     }
 
-    public static function anylize($code = null) {
+    /**
+     * Analyze php code and show report
+     * @param string|null $code php code
+     */
+    public static function analyze($code = null) {
         if ($code !== null) {
-            self::$_stmts = self::setCodeCode($code);
+            self::$_stmts = self::setCode($code);
         }
-
+        
         if (self::$_stmts !== null) {
-            self::_anylizeOrder(self::$_stmts);
+            self::_goDeeper(self::$_stmts);
         } else {
-            self::$errors[] = 'Anylize without code';
+            self::$errors[] = 'Analyze without code';
         }
-
+        
+        self::report();
+    }
+    
+    public static function report() {
+        //report
+        ini_set('xdebug.var_display_max_depth', -1);
+        ini_set('xdebug.var_display_max_children', -1);
+        ini_set('xdebug.var_display_max_data', -1);
         /*
         echo "\nStrings:\n";
         var_dump(self::$strings);
-        echo "\nVariables:\n";
-        var_dump(self::$variables);
-        echo "\nFunctions:\n";
-        var_dump(self::$functions);
         //*/
-        /*
+        //var_dump(self::$classes);
+        //*
         echo "\nClasses:\n";
-        var_dump(self::$classes);
-        echo "\nDynamic properties:\n";
-        var_dump(self::$dynamicProperties);
-        echo "\nStatic properties:\n";
-        var_dump(self::$staticProperties);
-        echo "\nDynamic methods:\n";
-        var_dump(self::$dynamicMethods);
-        echo "\nStatic methods:\n";
-        var_dump(self::$staticMethods);
+        foreach(self::$classes as $cname => $content) {
+            echo "\n{$cname} extends {$content['extends']} implements " . implode(', ', $content['implements']) . "\n";
+            
+            echo "Fields: \n";
+            foreach($content['fields'] as $fname => $field) {
+                echo "\t";
+                if ($field['public']) {
+                    echo 'public ';
+                } elseif ($field['protected']) {
+                    echo 'protected ';
+                } elseif ($field['private']) {
+                    echo 'private ';
+                }
+                
+                if ($field['static']) {
+                    echo 'static ';
+                }
+                
+                echo $fname . "\n";
+            }
+            
+            echo "Methods: \n";
+            foreach($content['methods'] as $mname => $method) {
+                echo "\t";
+                if ($method['public']) {
+                    echo 'public ';
+                } elseif ($method['protected']) {
+                    echo 'protected ';
+                } elseif ($method['private']) {
+                    echo 'private ';
+                }
+                
+                if ($method['static']) {
+                    echo 'static ';
+                }
+                
+                echo $mname;
+                
+                echo '(' . implode(', ', $method['arguments']) . ')';
+                $variables = array();
+                foreach($method['variables'] as $name => $status) {
+                    $variables[] = $name . ($status ? '[g]' : '[l]');
+                }
+                
+                echo '{' . implode(', ', $variables) . '}';
+                
+                echo "\n";
+            }
+        }
+        
+        echo "\nFunctions: \n";
+        foreach(self::$functions as $name => $function) {
+            echo $name;
+            
+            echo '(' . implode(', ', $function['arguments']) . ')';
+
+            $variables = array();
+            foreach($function['variables'] as $name => $status) {
+                $variables[] = $name . ($status ? '[g]' : '[l]');
+            }
+                
+            echo '{' . implode(', ', $variables) . '}';
+            
+            echo "\n";
+        }
+        
+        echo "\nVariables: \n";
+        
+        $variables = array();
+        foreach(self::$variables as $name => $status) {
+            $variables[] = $name . ($status ? '[g]' : '[l]');
+        }
+        
+        echo '{' . implode(', ', $variables) . '}';
+        
+        echo "\n";
         //*/
-        /*
-        echo '<pre>';
-        var_export(self::$_stmts);
+        //*
+        //var_dump(self::$_stmts);
         //*/
     }
 
@@ -453,7 +686,7 @@ class obfuscator {
         if (is_array($tree) || is_object($tree)) {
             foreach($tree as $node => &$leaf) {
                 if (!self::$property && (self::$param === null) && ($leaf instanceof PhpParser\Node\Scalar\String)) {
-                    $string = new PhpParser\Node\Expr\FuncCall(new PhpParser\Node\Name('MyStrings'), array(
+                    $string = new PhpParser\Node\Expr\FuncCall(new PhpParser\Node\Name(self::$_stringsMethodName), array(
                         new PhpParser\Node\Arg(new PhpParser\Node\Scalar\LNumber(
                             (int)$leaf->getAttribute('myid', array_search($leaf->value, self::$strings))
                         ))
@@ -558,7 +791,7 @@ class obfuscator {
         }
 
         $stringFun = $factory
-            ->function('MyStrings')
+            ->function(self::$_stringsMethodName)
             ->addParam($factory->param('offset'))
             ->addStmts(array(
                 new PhpParser\Node\Expr\Assign(new PhpParser\Node\Expr\Variable('strings'), new PhpParser\Node\Expr\Array_($strings)),

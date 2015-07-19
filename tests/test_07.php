@@ -19,7 +19,8 @@ class TheTest {
     }
 
     public function method1() {
-        echo "This should broke test\n";
+        $globalVar = 15;
+        echo "This should broke test [$globalVar]\n";
     }
 }
 

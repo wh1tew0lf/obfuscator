@@ -5,6 +5,8 @@
 class A {
     public $age = 60;
     public static $count = 0;
+    
+    private static $_z = 6;
 
     public function __construct() {
         echo "A created\n";
@@ -12,7 +14,7 @@ class A {
     }
 
     public function method1() {
-        echo "It is method1 from class A\n";
+        echo "It is method1 from class A(" . self::$_z . ")\n";
     }
 
     public function __destruct() {
@@ -21,7 +23,7 @@ class A {
 }
 
 class B extends A {
-    public function method1() {
+    public function method1() {        
         echo "It is method1 from class B\n";
     }
 
@@ -63,6 +65,7 @@ echo "C Age: {$c->age}\n";
 echo "C parent age: {$c->parent_age}\n";
 echo "B method from C: {$c->method1()}\n";
 echo "B get parent age: {$b->age}\n";
-
+echo "B count: " . B::$count . "\n";
+echo "C method2: {$c->method2()}\n";
 C::echoCount();
 
