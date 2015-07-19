@@ -14,10 +14,21 @@
         "ext-tokenizer": "*",
         "nikic/php-parser": "*"
     },
+    "require-dev": {
+        "phpunit/phpunit": "4.7.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "obfuscationTests\\": "test/"
+        }
+    },
     "repositories":[
         {
             "type":"git",
             "url":"http://github.com/nikic/PHP-Parser"
         }
-    ]
+    ],
+    "scripts": {
+        "test": "phpunit"
+    }
 }
