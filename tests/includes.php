@@ -7,15 +7,15 @@ function otherFun($arg1) {
 }
 
 class A {
-    public $field1 = 'ttt';
-    public static $field2 = 'sss';
+    public $field6 = 'ttt';
+    public static $field7 = 'sss';
 
-    public function method1($param) {
-        return $param . $this->field1;
+    public function method4($param) {
+        return $param . $this->field6;
     }
 
-    public static function method2() {
-        echo "A::method2" . self::$field2 . "\n";
+    public static function method5() {
+        echo "A::method5" . self::$field7 . "\n";
     }
 }
 

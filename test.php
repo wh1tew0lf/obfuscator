@@ -2,7 +2,7 @@
 
 require_once 'obfuscator.class.php';
 
-obfuscator::loadCode('tests/test_03.php');
+obfuscator::loadCode('tests/test_06.php');
 obfuscator::analyze();
 obfuscator::obfuscate();
 

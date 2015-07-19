@@ -1,7 +1,7 @@
 <?php
 
 if (!class_exists('PhpParser\Parser')) {
-    require_once '../PHP-Parser/lib/bootstrap.php';
+    require_once dirname(__FILE__) . '/../PHP-Parser/lib/bootstrap.php';
 }
 
 /**
@@ -180,6 +180,11 @@ class obfuscator {
         );
         self::$unObFunctions = array();
         self::$unObVariables = array('this' => 'this');
+        
+        self::$classesNames = array();
+        self::$methodsNames = array();
+        self::$functionsNames = array();
+        self::$variablesNames = array();
     
         self::$_stringsMethodName = 'MyStrings';
         self::$index = 0;
@@ -589,7 +594,20 @@ class obfuscator {
         if ($tree instanceof PhpParser\Node\Param) {
             self::$param = $tree->name;
         }
-        if (isset(self::$variablesNames[(string)$tree->name])) {
+        
+        $global = self::$global;
+        if (null !== self::$class) {
+            $global = isset(self::$classes[self::$class]['methods'][self::$callable]['variables'][$tree->name]['global']) &&
+                self::$classes[self::$class]['methods'][self::$callable]['variables'][$tree->name]['global'];
+        } elseif (null !== self::$callable) {
+            $global = isset(self::$functions[self::$callable]['variables'][$tree->name]['global']) &&
+                self::$functions[self::$callable]['variables'][$tree->name]['global'];
+        } else {
+            $global = isset(self::$variables[$tree->name]['global']) &&
+                self::$variables[$tree->name]['global'];
+        }
+        
+        if (isset(self::$variablesNames[(string)$tree->name]) && !$global) {
             if ($tree->name instanceof PhpParser\Node\Name) {
                 $tree->name->set(self::$variablesNames[$tree->name->toString()]);
             } else {
@@ -751,7 +769,7 @@ class obfuscator {
                     }
                 }
                 foreach($method['variables'] as $vname => $variable) {
-                    if (!isset(self::$unObVariables[$vname])) {
+                    if (!isset(self::$unObVariables[$vname]) && !$method['variables'][$vname]['global']) {
                         self::$variablesNames[$vname] = $vname;
                     }
                 }
@@ -768,14 +786,14 @@ class obfuscator {
                 }
             }
             foreach($function['variables'] as $vname => $variable) {
-                if (!isset(self::$unObVariables[$vname])) {
+                if (!isset(self::$unObVariables[$vname]) && !$function['variables'][$vname]['global']) {
                     self::$variablesNames[$vname] = $vname;
                 }
             }
         }
         
         foreach(self::$variables as $name => $status) {
-            if (!isset(self::$unObVariables[$name])) {
+            if (!isset(self::$unObVariables[$name]) && !self::$variables[$name]['global']) {
                 self::$variablesNames[$name] = $name;
             }
         }

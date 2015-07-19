@@ -3,6 +3,7 @@
  * Test for global vars replacement
  */
 require_once 'includes.php';
+global $globalObj;
 
 function show($var = 'some text') {
     global $globalVar;
@@ -21,8 +22,8 @@ class TheTest {
     public static function staticShow($var = 'some text3') {
         global $globalVar;
         global $globalObj;
-        $globalObj->field2 = "Test#{$globalVar}: $var";
-        show($globalObj->field2);
+        $globalObj->field6 = "Test#{$globalVar}: $var";
+        show($globalObj->field6);
     }
 
     public static function method2() {
@@ -32,12 +33,12 @@ class TheTest {
 
 show('Increment once');
 show('Increment twice');
-show($globalObj->field1);
+show($globalObj->field6);
 
 $th = new TheTest();
 $th->show();
 TheTest::staticShow('Message');
-$globalObj->field1 = 'String';
+$globalObj->field6 = 'String';
 TheTest::$field2 = 'String2';
 TheTest::staticShow('Message');
-A::method2();
+A::method5();
