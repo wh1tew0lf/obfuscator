@@ -413,11 +413,20 @@ class obfuscator {
         self::report();
     }
     
+    /**
+     * Encodes name to some unified
+     * @param string $name
+     * @return string New name
+     */
     private static function encodeName($name) {
         //return '_' . substr(md5($name),1, 4) . substr(md5($name), 7, 11) . uniqid();
         return '_' . self::$index++;
     }
 
+    /**
+     * Makes prepares before obfuscate - concatenates strings
+     * @param \PhpParser\Node $tree
+     */
     private static function &_beforeObfuscate(&$tree) {
         if (is_array($tree) || is_object($tree)) {
             foreach($tree as $node => &$leaf) {
@@ -450,6 +459,10 @@ class obfuscator {
         return $tree;
     }
     
+    /**
+     * Obfuscates classes
+     * @param \PhpParser\Node $tree
+     */
     private static function &_obfuscateClass(&$tree) {
         self::$class = $tree->name;
         if (isset(self::$classesNames[(string)$tree->name])) {
@@ -471,6 +484,10 @@ class obfuscator {
         return $result;
     }
     
+    /**
+     * Obfuscates methods
+     * @param \PhpParser\Node $tree
+     */
     private static function &_obfuscateMethod(&$tree) {
         if ($tree instanceof PhpParser\Node\Stmt\ClassMethod) {
             self::$callable = $tree->name;
@@ -496,6 +513,10 @@ class obfuscator {
         return $result;
     }
     
+    /**
+     * Obfuscates functions
+     * @param \PhpParser\Node $tree
+     */
     private static function &_obfuscateFunction(&$tree) {
         if ($tree instanceof PhpParser\Node\Stmt\Function_) {
             self::$callable = $tree->name;
@@ -517,6 +538,10 @@ class obfuscator {
         return $result;
     }
     
+    /**
+     * Obfuscates properties
+     * @param \PhpParser\Node $tree
+     */
     private static function &_obfuscateProperty(&$tree) {
         if ($tree instanceof PhpParser\Node\Stmt\PropertyProperty) {
             self::$property = true;
@@ -543,6 +568,10 @@ class obfuscator {
         return $result;
     }
     
+    /**
+     * Obfuscates variables
+     * @param \PhpParser\Node $tree
+     */
     private static function &_obfuscateVariable(&$tree) {
         if ($tree instanceof PhpParser\Node\Param) {
             self::$param = $tree->name;
@@ -562,6 +591,10 @@ class obfuscator {
         return $result;
     }
     
+    /**
+     * Obfuscates classes at new construct and static call/fetch
+     * @param \PhpParser\Node $tree
+     */
     private static function &_obfuscateNew(&$tree) {
         if (isset(self::$classesNames[(string)$tree->class])) {
             if ($tree->class instanceof PhpParser\Node\Name) {
@@ -576,6 +609,10 @@ class obfuscator {
         return $result;
     }
     
+    /**
+     * Obfuscates strings
+     * @param \PhpParser\Node $tree
+     */
     private static function &_obfuscateString(&$tree) {
         if (!self::$property && (self::$param === null)) {
             $tree = new PhpParser\Node\Expr\FuncCall(new PhpParser\Node\Name(self::$_stringsMethodName), array(
@@ -590,6 +627,10 @@ class obfuscator {
         return $result;
     }
     
+    /**
+     * Goes deeper at recursion or tree
+     * @param \PhpParser\Node[] $tree
+     */
     private static function &_obfuscate(&$tree) {
         if (is_array($tree) || is_object($tree)) {
             foreach($tree as $node => &$leaf) {
@@ -630,6 +671,10 @@ class obfuscator {
         return $tree;
     }
 
+    /**
+     * Obfuscate code
+     * @param string|null $code Code for obfuscation
+     */
     public static function obfuscate($code = null) {
         self::clearState();
         if ($code !== null) {
@@ -717,10 +762,13 @@ class obfuscator {
             self::$errors[] = 'Obfuscate without code';
         }
 
-        self::addStringFun();
+        self::addStringFunction();
     }
 
-    private static function addStringFun() {
+    /**
+     * Add to code strings function
+     */
+    private static function addStringFunction() {
         $factory = new PhpParser\BuilderFactory;
 
         $stringList = array();
@@ -757,6 +805,9 @@ class obfuscator {
         array_unshift(self::$_stmts, $stringFun);
     }
     
+    /**
+     * Show report
+     */
     public static function report() {
         echo "\nClasses:\n";
         foreach(self::$classes as $cname => $content) {
