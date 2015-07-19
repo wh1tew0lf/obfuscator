@@ -1,4 +1,9 @@
-<?php /**
+<?php function MyStrings($offset)
+{
+    $strings = array();
+    return isset($strings[$offset]) ? base64_decode($strings[$offset]) : '';
+}
+/**
  * Test for number replacement
  */
 $_7 = 16;

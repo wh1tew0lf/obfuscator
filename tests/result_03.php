@@ -1,4 +1,9 @@
-<?php /**
+<?php function MyStrings($offset)
+{
+    $strings = array(0 => 'QSBjcmVhdGVkCg==', 1 => 'SXQgaXMgbWV0aG9kMSBmcm9tIGNsYXNzIEEo', 2 => 'KQo=', 3 => 'SXQgaXMgbWV0aG9kMSBmcm9tIGNsYXNzIEIK', 4 => 'Cg==', 5 => 'cGFyZW50X2FnZQ==', 6 => 'RG9uJ3Qga25vdyE=', 7 => 'QSBjb3VudDog', 8 => 'Cg==', 9 => 'QSBBZ2U6IA==', 10 => 'Cg==', 11 => 'QSBhbmQgQiBjb3VudDog', 12 => 'Cg==', 13 => 'QyBBZ2U6IA==', 14 => 'Cg==', 15 => 'QyBwYXJlbnQgYWdlOiA=', 16 => 'Cg==', 17 => 'QiBtZXRob2QgZnJvbSBDOiA=', 18 => 'Cg==', 19 => 'QiBnZXQgcGFyZW50IGFnZTog', 20 => 'Cg==', 21 => 'QiBjb3VudDog', 22 => 'Cg==', 23 => 'QyBtZXRob2QyOiA=', 24 => 'Cg==');
+    return isset($strings[$offset]) ? base64_decode($strings[$offset]) : '';
+}
+/**
  * Test for class names and methods replacement
  */
 class A
@@ -8,14 +13,12 @@ class A
     private static $_3 = 6;
     public function __construct()
     {
-        echo 'A created
-';
+        echo MyStrings(0);
         self::$_2++;
     }
     public function _4()
     {
-        echo 'It is method1 from class A(' . self::$_3 . ')
-';
+        echo MyStrings(1) . self::$_3 . MyStrings(2);
     }
     public function __destruct()
     {
@@ -26,8 +29,7 @@ class B extends A
 {
     public function _4()
     {
-        echo 'It is method1 from class B
-';
+        echo MyStrings(3);
     }
     public function _6()
     {
@@ -43,13 +45,12 @@ class C extends B
     }
     public static function _8()
     {
-        echo self::$_2 . '
-';
+        echo self::$_2 . MyStrings(4);
     }
     public function __get($_9)
     {
-        if ($_9 == 'parent_age') {
-            return 'Don\'t know!';
+        if ($_9 == MyStrings(5)) {
+            return MyStrings(6);
         }
         return null;
     }
@@ -57,25 +58,16 @@ class C extends B
 $_10 = new A();
 $_11 = new B();
 $_12 = new C();
-echo 'A count: ' . A::$_2 . '
-';
+echo MyStrings(7) . A::$_2 . MyStrings(4);
 $_10->_4();
 $_10->_1 = 167;
-echo 'A Age: ' . $_10->_1 . '
-';
+echo MyStrings(9) . $_10->_1 . MyStrings(4);
 $_11->_4();
-echo 'A and B count: ' . $_11->_6() . '
-';
-echo 'C Age: ' . $_12->_1 . '
-';
-echo 'C parent age: ' . $_12->parent_age . '
-';
-echo 'B method from C: ' . $_12->_4() . '
-';
-echo 'B get parent age: ' . $_11->_1 . '
-';
-echo 'B count: ' . B::$_2 . '
-';
-echo 'C method2: ' . $_12->_6() . '
-';
+echo MyStrings(11) . $_11->_6() . MyStrings(4);
+echo MyStrings(13) . $_12->_1 . MyStrings(4);
+echo MyStrings(15) . $_12->parent_age . MyStrings(4);
+echo MyStrings(17) . $_12->_4() . MyStrings(4);
+echo MyStrings(19) . $_11->_1 . MyStrings(4);
+echo MyStrings(21) . B::$_2 . MyStrings(4);
+echo MyStrings(23) . $_12->_6() . MyStrings(4);
 C::_8();

@@ -1,14 +1,9 @@
 <?php
-ini_set('xdebug.var_display_max_depth', -1);
-        ini_set('xdebug.var_display_max_children', -1);
-        ini_set('xdebug.var_display_max_data', -1);
-        
+
 /**
  * @todo Think on the using process
  * @todo Replace numbers as expressions
  * @todo Class fields undefined
- * 1) ObfuscateOrder make simplier (break into many methods)
- * 2) Number should expand to expressions
  */
 
 if (!class_exists('PhpParser\Parser')) {
@@ -490,9 +485,10 @@ class obfuscator {
     }
     
     private static function &_beforeObfuscate(&$tree) {
-        if($tree instanceof PhpParser\Node\Scalar\String) {
+        /*if ($tree instanceof PhpParser\Node\Scalar\String) {
+            self::$strings[] = $tree->value;
             $tree->setAttribute('myid', count(self::$strings));
-        }
+        }*/
         
         if (is_array($tree) || is_object($tree)) {
             foreach($tree as $node => &$leaf) {
@@ -636,6 +632,21 @@ class obfuscator {
         return $result;
     }
     
+    private static function &_obfuscateString(&$tree) {
+        if (!self::$property && (self::$param === null)) {
+            var_dump(array_search($tree->value, self::$strings)); 
+            $tree = new PhpParser\Node\Expr\FuncCall(new PhpParser\Node\Name(self::$_stringsMethodName), array(
+                new PhpParser\Node\Arg(new PhpParser\Node\Scalar\LNumber(
+                    (int)array_search($tree->value, self::$strings)
+                ))
+            ));
+        }
+        
+        $result = self::_obfuscate($tree);
+       
+        return $result;
+    }
+    
     private static function &_obfuscate(&$tree) {
         if (is_array($tree) || is_object($tree)) {
             foreach($tree as $node => &$leaf) {
@@ -659,6 +670,8 @@ class obfuscator {
                 } elseif (($leaf instanceof PhpParser\Node\Expr\Assign) ||
                     ($leaf instanceof PhpParser\Node\Expr\New_)) {
                     $result = self::_obfuscateAssign($leaf);
+                } elseif (($leaf instanceof PhpParser\Node\Scalar\String)) {
+                    $result = self::_obfuscateString($leaf);
                 } else {
                     $result = self::_obfuscate($leaf);
                 }
@@ -670,29 +683,6 @@ class obfuscator {
                 } else {
                     self::$errors[] = 'Undefined tree element!';
                 }
-                
-                /*if (!self::$property && (self::$param === null) && ($leaf instanceof PhpParser\Node\Scalar\String)) {
-                    $string = new PhpParser\Node\Expr\FuncCall(new PhpParser\Node\Name(self::$_stringsMethodName), array(
-                        new PhpParser\Node\Arg(new PhpParser\Node\Scalar\LNumber(
-                            (int)$leaf->getAttribute('myid', array_search($leaf->value, self::$strings))
-                        ))
-                    ));
-                    if (is_object($tree)) {
-                        $tree->{$node} = $leaf = &$string;
-                    } elseif (is_array($tree)) {
-                        $tree[$node] = $leaf = &$string;
-                    } else {
-                        self::$errors[] = 'Undefined tree element!';
-                    }
-                } else {
-                    if (is_object($tree)) {
-                        $tree->{$node} = self::_obfuscate($leaf);
-                    } elseif(is_array($tree)) {
-                        $tree[$node] = self::_obfuscate($leaf);
-                    } else {
-                        self::$errors[] = 'Undefined tree element!';
-                    }
-                }*/
             }
         }
         return $tree;
@@ -799,7 +789,7 @@ class obfuscator {
             self::$errors[] = 'Obfuscate without code';
         }
 
-        //self::addStringFun();
+        self::addStringFun();
     }
 
     private static function addStringFun() {
