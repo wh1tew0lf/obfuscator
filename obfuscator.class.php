@@ -447,6 +447,9 @@ class obfuscator {
                         self::$errors[] = 'Undefined tree element!';
                     }
                 }
+                if (($leaf instanceof PhpParser\NodeAbstract) && (null !== $leaf->getAttribute('comments'))) {
+                    $leaf->setAttribute('comments', array());
+                }
                 if (is_object($tree)) {
                     $tree->{$node} = self::_beforeObfuscate($leaf);
                 } elseif(is_array($tree)) {
