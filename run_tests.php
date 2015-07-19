@@ -18,9 +18,9 @@ if (is_dir($testsDir)) {
                 $resultFile = "{$testsDir}result_{$matches[1]}.php";
 
                 ob_start();
-                obfuscator::clearState();
+                //obfuscator::clearState();
                 obfuscator::loadCode($testsDir . $file);
-                obfuscator::analyze();
+                //obfuscator::analyze();
                 obfuscator::obfuscate();
                 ob_end_clean();
 

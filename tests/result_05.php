@@ -1,42 +1,37 @@
-<?php function MyStrings($offset)
-{
-    $strings = array(0 => 'VmFyaWFibGUx', 1 => 'ICsr', 2 => 'JHZhcmlhYmxlMSArKw==', 3 => 'Lg==', 4 => 'Cg==', 5 => 'IGFuZCA=', 6 => 'Cg==', 7 => 'dmFyMQ==', 8 => 'dmFyMg==', 9 => 'dmFyMw==', 10 => 'Ww==', 11 => 'XSA9PiB7', 12 => 'fQo=', 13 => 'RnVuY3Rpb24xCg==', 14 => 'Cg==', 15 => 'QSBjcmVhdGVkCg==', 16 => 'SXQgaXMgbWV0aG9kMSBmcm9tIGNsYXNzIEEo', 17 => 'KQo=', 18 => 'SXQgaXMgbWV0aG9kMSBmcm9tIGNsYXNzIEIK', 19 => 'Cg==', 20 => 'cGFyZW50X2FnZQ==', 21 => 'RG9uJ3Qga25vdyE=', 22 => 'QSBjb3VudDog', 23 => 'Cg==', 24 => 'QSBBZ2U6IA==', 25 => 'Cg==', 26 => 'QSBhbmQgQiBjb3VudDog', 27 => 'Cg==', 28 => 'QyBBZ2U6IA==', 29 => 'Cg==', 30 => 'QyBwYXJlbnQgYWdlOiA=', 31 => 'Cg==', 32 => 'QiBtZXRob2QgZnJvbSBDOiA=', 33 => 'Cg==', 34 => 'QiBnZXQgcGFyZW50IGFnZTog', 35 => 'Cg==', 36 => 'QiBjb3VudDog', 37 => 'Cg==', 38 => 'QyBtZXRob2QyOiA=', 39 => 'Cg==', 40 => 'VGVzdCBTdHJpbmc=', 41 => 'VGhpcwlpcyB0ZXh0Cg==', 42 => 'IEFORCA=', 43 => 'ICAgIEhlcmVkb2MgdGV4dAogICAg', 44 => 'ICAgIE5vd2RvYyB0ZXh0CiAgICAkc3RyaW5nMQ==', 45 => 'RW5jb2RlZCBzdHJpbmc=', 46 => 'VGVzdA==', 47 => 'IGNvbmNhdA==', 48 => 'ISEhIQ==', 49 => 'ISEhIQ==', 50 => 'Cg==', 51 => 'dGV4dA==', 52 => '', 53 => 'ZmllbGQx', 54 => 'ZmllbGQy', 55 => 'Cg==', 56 => 'Cg==');
-    return isset($strings[$offset]) ? base64_decode($strings[$offset]) : '';
-}
-/**
+<?php /**
  * Test for number replacement
  */
-$_0 = 16;
-$_1 = 35.5;
-$_2 = $_0 * 2;
-$_3 = $_1 * 2;
-function _13($_4, $_5 = 5)
+$_7 = 16;
+$_8 = 35.5;
+$_9 = $_7 * 2;
+$_10 = $_8 * 2;
+function _4($_5, $_6 = 5)
 {
-    return $_4 * $_4 + $_5 / 2;
+    return $_5 * $_5 + $_6 / 2;
 }
-$_6 = _13($_0);
-$_7 = _13($_0, $_2);
-$_8 = _13($_1);
-$_9 = _13($_1, $_3);
-$_10 = _13($_1, $_0);
+$_11 = _4($_7);
+$_12 = _4($_7, $_9);
+$_13 = _4($_8);
+$_14 = _4($_8, $_10);
+$_15 = _4($_8, $_7);
 class TheTest
 {
-    public function _19($_11 = 7)
+    public function _1($_2 = 7)
     {
-        echo number_format($_11, 2);
+        echo number_format($_2, 2);
     }
-    public static function _20($_11 = 9)
+    public static function _3($_2 = 9)
     {
-        echo number_format($_11, 3);
+        echo number_format($_2, 3);
     }
 }
-$_12 = new TheTest();
-$_12->_19($_6);
-$_12->_19($_7);
-TheTest::_20($_8);
-TheTest::_20($_9);
-TheTest::_20($_10);
-$_12->_19(_13($_0, $_2));
-$_12->_19(_13(77));
-TheTest::_20(_13(5));
-TheTest::_20(_13($_6, $_6));
+$_16 = new TheTest();
+$_16->_1($_11);
+$_16->_1($_12);
+TheTest::_3($_13);
+TheTest::_3($_14);
+TheTest::_3($_15);
+$_16->_1(_4($_7, $_9));
+$_16->_1(_4(77));
+TheTest::_3(_4(5));
+TheTest::_3(_4($_11, $_11));
