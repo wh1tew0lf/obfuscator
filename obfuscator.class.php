@@ -1,11 +1,10 @@
 <?php
 
-if (!class_exists('PhpParser\Parser')) {
-    require_once dirname(__FILE__) . '/../PHP-Parser/lib/bootstrap.php';
-}
+require_once dirname(__FILE__) . '/vendor/autoload.php';
 
 /**
  * Static class for obfuscate php code
+ * @version 1.1
  */
 class obfuscator {
 
@@ -706,7 +705,7 @@ class obfuscator {
                     ($leaf instanceof PhpParser\Node\Expr\FuncCall)) {
                     $result = self::_obfuscateFunction($leaf);
                 } elseif (($leaf instanceof PhpParser\Node\Expr\PropertyFetch) ||
-                    ($leaf instanceof PhpParser\Node\Stmt\Property) ||
+                    //($leaf instanceof PhpParser\Node\Stmt\Property) ||
                     ($leaf instanceof PhpParser\Node\Stmt\PropertyProperty) ||
                     ($leaf instanceof PhpParser\Node\Expr\StaticPropertyFetch)) {
                     $result = self::_obfuscateProperty($leaf);

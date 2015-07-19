@@ -1,2 +1,9 @@
-/nbproject/*
+# netbeans project files
+nbproject
+
+# composer vendor dir
+/vendor
+composer.lock
+
+#results files
 *res*

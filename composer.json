@@ -1,0 +1,23 @@
+{
+    "name": "wh1tew0lf/obfuscator",
+    "description": "A PHP obfuscator written in PHP. Simple and stupid",
+    "keywords": ["php", "obfuscator"],
+    "type": "project",
+    "license": "BSD-3-Clause",
+    "authors": [
+        {
+            "name": "Danil Volkov"
+        }
+    ],
+    "require": {
+        "php": ">=5.3",
+        "ext-tokenizer": "*",
+        "nikic/php-parser": "*"
+    },
+    "repositories":[
+        {
+            "type":"git",
+            "url":"http://github.com/nikic/PHP-Parser"
+        }
+    ]
+}
