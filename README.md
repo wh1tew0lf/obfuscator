@@ -6,11 +6,9 @@ Link to PHP-Parser https://github.com/nikic/PHP-Parser
 
 Usage:
 <pre><code>
-obfuscator::clearState();
 obfuscator::loadCode( /*Some file path*/ );
 //or obfuscator::setCode( /*Some code string*/ );
-obfuscator::anylize();
-obfuscator::obfuscate();
+obfuscator::anylize(); //or obfuscator::obfuscate();
 obfuscator::saveCode(/*Some file path*/);
 //or obfuscator::getCode();
 </code></pre>
