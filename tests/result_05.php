@@ -1,42 +1,42 @@
-<?php function MyStrings($offset)
+<?php function MyStrings($_52)
 {
-    $strings = array();
-    return isset($strings[$offset]) ? base64_decode($strings[$offset]) : '';
+    $_53 = array();
+    return isset($_53[$_52]) ? base64_decode($_53[$_52]) : '';
 }
 /**
  * Test for number replacement
  */
-$_7 = 16;
-$_8 = 35.5;
-$_9 = $_7 * 2;
-$_10 = $_8 * 2;
-function _4($_5, $_6 = 5)
+$_43 = 16;
+$_44 = 35.5;
+$_45 = $_43 * 2;
+$_46 = $_44 * 2;
+function _12($_41, $_42 = 5)
 {
-    return $_5 * $_5 + $_6 / 2;
+    return $_41 * $_41 + $_42 / 2;
 }
-$_11 = _4($_7);
-$_12 = _4($_7, $_9);
-$_13 = _4($_8);
-$_14 = _4($_8, $_10);
-$_15 = _4($_8, $_7);
-class TheTest
+$_47 = _12($_43);
+$_48 = _12($_43, $_45);
+$_49 = _12($_44);
+$_50 = _12($_44, $_46);
+$_51 = _12($_44, $_43);
+class _3
 {
-    public function _1($_2 = 7)
+    public function _7($_20 = 7)
     {
-        echo number_format($_2, 2);
+        echo number_format($_20, 2);
     }
-    public static function _3($_2 = 9)
+    public static function _8($_20 = 9)
     {
-        echo number_format($_2, 3);
+        echo number_format($_20, 3);
     }
 }
-$_16 = new TheTest();
-$_16->_1($_11);
-$_16->_1($_12);
-TheTest::_3($_13);
-TheTest::_3($_14);
-TheTest::_3($_15);
-$_16->_1(_4($_7, $_9));
-$_16->_1(_4(77));
-TheTest::_3(_4(5));
-TheTest::_3(_4($_11, $_11));
+$_40 = new _3();
+$_40->_7($_47);
+$_40->_7($_48);
+_3::_8($_49);
+_3::_8($_50);
+_3::_8($_51);
+$_40->_7(_12($_43, $_45));
+$_40->_7(_12(77));
+_3::_8(_12(5));
+_3::_8(_12($_47, $_47));

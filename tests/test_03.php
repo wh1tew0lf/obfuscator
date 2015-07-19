@@ -68,4 +68,6 @@ echo "B get parent age: {$b->age}\n";
 echo "B count: " . B::$count . "\n";
 echo "C method2: {$c->method2()}\n";
 C::echoCount();
+$__call = 5;
+echo "Test = $__call\n";
 

@@ -1,19 +1,19 @@
-<?php function MyStrings($offset)
+<?php function MyStrings($_10)
 {
-    $strings = array(0 => 'RnVuY3Rpb24xCg==', 1 => 'Cg==');
-    return isset($strings[$offset]) ? base64_decode($strings[$offset]) : '';
+    $_11 = array(0 => 'RnVuY3Rpb24xCg==', 1 => 'Cg==');
+    return isset($_11[$_10]) ? base64_decode($_11[$_10]) : '';
 }
 /**
  * Test for function name replacement
  */
-$_2 = 0;
+$_9 = 0;
 function _0()
 {
     echo MyStrings(0);
 }
-function _1($_2)
+function _1($_9)
 {
-    return ++$_2;
+    return ++$_9;
 }
 _0();
-echo _1(_1($_2)) . MyStrings(1);
+echo _1(_1($_9)) . MyStrings(1);

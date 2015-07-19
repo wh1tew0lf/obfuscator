@@ -71,10 +71,10 @@ class obfuscator {
      * @var \PhpParser\Node[] code tree
      */
     private static $_stmts = null;
+    
+    private static $unObClasses = array('self' => 'self');
 
-    private static $unObfuscatedVariables = array('this' => 'this');
-
-    private static $unObfuscatedMethods = array(
+    private static $unObMethods = array(
         '__construct' => '__construct',
         '__destruct' => '__destruct',
         '__call' => '__call',
@@ -91,6 +91,10 @@ class obfuscator {
         '__clone' => '__clone'
     );
     
+    private static $unObFunctions = array();
+    
+    private static $unObVariables = array('this' => 'this');
+    
     /**
      * @var string name of strings function 
      */
@@ -98,7 +102,10 @@ class obfuscator {
 
     private static $index = 0;
     
-    private static $names = array();
+    private static $classesNames = array();
+    private static $methodsNames = array();
+    private static $functionsNames = array();
+    private static $variablesNames = array();
 
     /**
      * Sigleton for php parser
@@ -143,8 +150,9 @@ class obfuscator {
         self::$global = null;
         self::$property = false;
         //self::$_stmts = null;
-        self::$unObfuscatedVariables = array('this' => 'this');
-        self::$unObfuscatedMethods = array(
+        
+        self::$unObClasses = array('self' => 'self');
+        self::$unObMethods = array(
             '__construct' => '__construct',
             '__destruct' => '__destruct',
             '__call' => '__call',
@@ -160,6 +168,8 @@ class obfuscator {
             '__set_state' => '__set_state',
             '__clone' => '__clone'
         );
+        self::$unObFunctions = array();
+        self::$unObVariables = array('this' => 'this');
     
         self::$_stringsMethodName = 'MyStrings';
         self::$index = 0;
@@ -408,76 +418,7 @@ class obfuscator {
         return '_' . self::$index++;
     }
 
-    /**
-     * @deprecated since version 1
-     * @param type $className
-     * @param type $methodName
-     * @return boolean
-     */
-    private static function isMethodExists($className, $methodName) {
-        if (isset(self::$classes[$className])) {
-            return  (isset(self::$dynamicMethods[$className]) &&
-                    isset(self::$dynamicMethods[$className][$methodName])) ||
-                    self::isMethodExists(self::$classes[$className], $methodName);
-        }
-        return false;
-    }
-
-    /**
-     * @deprecated since version 1
-     * @param type $className
-     * @param type $methodName
-     * @return type
-     */
-    private static function getMethod($className, $methodName) {
-        if (isset(self::$classes[$className])) {
-            if (isset(self::$dynamicMethods[$className][$methodName])) {
-                return self::$dynamicMethods[$className][$methodName];
-            } else {
-                return self::getMethod(self::$classes[$className], $methodName);
-            }
-        }
-        return $methodName;
-    }
-
-    /**
-     * @deprecated since version 1
-     * @param type $className
-     * @param type $propertyName
-     * @return boolean
-     */
-    private static function isPropertyExists($className, $propertyName) {
-        if (isset(self::$classes[$className])) {
-            return (isset(self::$dynamicProperties[$className]) &&
-                    isset(self::$dynamicProperties[$className][$propertyName])) ||
-                    self::isPropertyExists(self::$classes[$className], $propertyName);
-        }
-        return false;
-    }
-
-    /**
-     * @deprecated since version 1
-     * @param type $className
-     * @param type $propertyName
-     * @return type
-     */
-    private static function getProperty($className, $propertyName) {
-        if (isset(self::$classes[$className])) {
-            if (isset(self::$dynamicProperties[$className][$propertyName])) {
-                return self::$dynamicProperties[$className][$propertyName];
-            } else {
-                return self::getProperty(self::$classes[$className], $propertyName);
-            }
-        }
-        return $propertyName;
-    }
-    
     private static function &_beforeObfuscate(&$tree) {
-        /*if ($tree instanceof PhpParser\Node\Scalar\String) {
-            self::$strings[] = $tree->value;
-            $tree->setAttribute('myid', count(self::$strings));
-        }*/
-        
         if (is_array($tree) || is_object($tree)) {
             foreach($tree as $node => &$leaf) {
                 if ($leaf instanceof PhpParser\Node\Scalar\Encapsed) {
@@ -511,13 +452,20 @@ class obfuscator {
     
     private static function &_obfuscateClass(&$tree) {
         self::$class = $tree->name;
-        /*if (isset(self::$names[(string)$tree->name])) {
+        if (isset(self::$classesNames[(string)$tree->name])) {
             if ($tree->name instanceof PhpParser\Node\Name) {
-                $tree->name->set(self::$names[$tree->name->toString()]);
+                $tree->name->set(self::$classesNames[$tree->name->toString()]);
             } else {
-                $tree->name = self::$names[$tree->name];
+                $tree->name = self::$classesNames[$tree->name];
             }
-        }*/
+        }
+        if (isset(self::$classesNames[(string)$tree->extends])) {
+            if ($tree->extends instanceof PhpParser\Node\Name) {
+                $tree->extends->set(self::$classesNames[$tree->extends->toString()]);
+            } else {
+                $tree->extends = self::$classesNames[$tree->extends];
+            }
+        }
         $result = self::_obfuscate($tree);
         self::$class = null;
         return $result;
@@ -528,15 +476,19 @@ class obfuscator {
             self::$callable = $tree->name;
         }
         
-        if (isset(self::$names[(string)$tree->name])) {
+        if (isset(self::$methodsNames[(string)$tree->name])) {
             if ($tree->name instanceof PhpParser\Node\Name) {
-                $tree->name->set(self::$names[$tree->name->toString()]);
+                $tree->name->set(self::$methodsNames[$tree->name->toString()]);
             } else {
-                $tree->name = self::$names[$tree->name];
+                $tree->name = self::$methodsNames[$tree->name];
             }
         }
         
-        $result = self::_obfuscate($tree);
+        if ($tree instanceof PhpParser\Node\Expr\StaticCall) {
+            $result = self::_obfuscateNew($tree);
+        } else {
+            $result = self::_obfuscate($tree);
+        }
         
         if ($tree instanceof PhpParser\Node\Stmt\ClassMethod) {
             self::$callable = null;
@@ -549,11 +501,11 @@ class obfuscator {
             self::$callable = $tree->name;
         }
         
-        if (isset(self::$names[(string)$tree->name])) {
+        if (isset(self::$functionsNames[(string)$tree->name])) {
             if ($tree->name instanceof PhpParser\Node\Name) {
-                $tree->name->set(self::$names[$tree->name->toString()]);
+                $tree->name->set(self::$functionsNames[$tree->name->toString()]);
             } else {
-                $tree->name = self::$names[$tree->name];
+                $tree->name = self::$functionsNames[$tree->name];
             }
         }
         
@@ -570,15 +522,19 @@ class obfuscator {
             self::$property = true;
         }
         
-        if (isset(self::$names[(string)$tree->name])) {
+        if (isset(self::$variablesNames[(string)$tree->name])) {
             if ($tree->name instanceof PhpParser\Node\Name) {
-                $tree->name->set(self::$names[$tree->name->toString()]);
+                $tree->name->set(self::$variablesNames[$tree->name->toString()]);
             } else {
-                $tree->name = self::$names[$tree->name];
+                $tree->name = self::$variablesNames[$tree->name];
             }
         }
         
-        $result = self::_obfuscate($tree);
+        if ($tree instanceof PhpParser\Node\Expr\StaticPropertyFetch) {
+            $result = self::_obfuscateNew($tree);
+        } else {
+            $result = self::_obfuscate($tree);
+        }
         
         if ($tree instanceof PhpParser\Node\Stmt\PropertyProperty) {
             self::$property = null;
@@ -591,11 +547,11 @@ class obfuscator {
         if ($tree instanceof PhpParser\Node\Param) {
             self::$param = $tree->name;
         }
-        if (isset(self::$names[(string)$tree->name])) {
+        if (isset(self::$variablesNames[(string)$tree->name])) {
             if ($tree->name instanceof PhpParser\Node\Name) {
-                $tree->name->set(self::$names[$tree->name->toString()]);
+                $tree->name->set(self::$variablesNames[$tree->name->toString()]);
             } else {
-                $tree->name = self::$names[$tree->name];
+                $tree->name = self::$variablesNames[$tree->name];
             }
         }
         
@@ -606,14 +562,14 @@ class obfuscator {
         return $result;
     }
     
-    private static function &_obfuscateAssign(&$tree) {
-       /* if (isset(self::$names[$tree->name])) {
-            if ($tree->name instanceof PhpParser\Node\Name) {
-                $tree->name->set(self::$names[$tree->name->toString()]);
+    private static function &_obfuscateNew(&$tree) {
+        if (isset(self::$classesNames[(string)$tree->class])) {
+            if ($tree->class instanceof PhpParser\Node\Name) {
+                $tree->class->set(self::$classesNames[$tree->class->toString()]);
             } else {
-                $tree->name = self::$names[$tree->name];
+                $tree->class = self::$classesNames[$tree->class];
             }
-        }*/
+        }
         
         $result = self::_obfuscate($tree);
        
@@ -654,9 +610,8 @@ class obfuscator {
                 } elseif (($leaf instanceof PhpParser\Node\Expr\Variable) ||
                     ($leaf instanceof PhpParser\Node\Param)) {
                     $result = self::_obfuscateVariable($leaf);
-                } elseif (($leaf instanceof PhpParser\Node\Expr\Assign) ||
-                    ($leaf instanceof PhpParser\Node\Expr\New_)) {
-                    $result = self::_obfuscateAssign($leaf);
+                } elseif ($leaf instanceof PhpParser\Node\Expr\New_) {
+                    $result = self::_obfuscateNew($leaf);
                 } elseif (($leaf instanceof PhpParser\Node\Scalar\String)) {
                     $result = self::_obfuscateString($leaf);
                 } else {
@@ -688,52 +643,73 @@ class obfuscator {
             self::$errors[] = 'Analyze without code';
         }
         
-        $boiler = array();
         foreach(self::$classes as $cname => $content) {
-            $boiler[$cname] = $cname;
+            if (!isset(self::$unObClasses[$cname])) {
+                self::$classesNames[$cname] = $cname;
+            }
             foreach($content['fields'] as $fname => $field) {
-                $boiler[$fname] = $fname;
+                self::$variablesNames[$fname] = $fname; //TODO ??
             }
             foreach($content['methods'] as $mname => $method) {
-                if (!isset(self::$unObfuscatedMethods[$mname])) {
-                    $boiler[$mname] = $mname;
+                if (!isset(self::$unObMethods[$mname])) {
+                    self::$methodsNames[$mname] = $mname;
                 }
                 foreach($method['arguments'] as $aname => $argument) {
-                    $boiler[$aname] = $aname;
+                    if (!isset(self::$unObVariables[$aname])) {
+                        self::$variablesNames[$aname] = $aname;
+                    }
                 }
                 foreach($method['variables'] as $vname => $variable) {
-                    if (!isset(self::$unObfuscatedVariables[$vname])) {
-                        $boiler[$vname] = $vname;
+                    if (!isset(self::$unObVariables[$vname])) {
+                        self::$variablesNames[$vname] = $vname;
                     }
                 }
             }
         }
         
         foreach(self::$functions as $name => $function) {
-            $boiler[$name] = $name;
+            if (!isset(self::$unObFunctions[$name])) {
+                self::$functionsNames[$name] = $name;
+            }
             foreach($function['arguments'] as $aname => $argument) {
-                $boiler[$aname] = $aname;
+                if (!isset(self::$unObVariables[$aname])) {
+                    self::$variablesNames[$aname] = $aname;
+                }
             }
             foreach($function['variables'] as $vname => $variable) {
-                if (!isset(self::$unObfuscatedVariables[$vname])) {
-                    $boiler[$vname] = $vname;
+                if (!isset(self::$unObVariables[$vname])) {
+                    self::$variablesNames[$vname] = $vname;
                 }
             }
         }
         
         foreach(self::$variables as $name => $status) {
-            if (!isset(self::$unObfuscatedVariables[$name])) {
-                $boiler[$name] = $name;
+            if (!isset(self::$unObVariables[$name])) {
+                self::$variablesNames[$name] = $name;
             }
         }
+        
+        $boiler = self::$classesNames + self::$methodsNames + self::$functionsNames + self::$variablesNames;
         
         foreach ($boiler as &$val) {
             $val = self::encodeName($val);
         }
         
-        self::$names = $boiler;
-       
-        //self::$classes['self'] = '';
+        foreach(self::$classesNames as $key => $name) {
+            self::$classesNames[$key] = isset($boiler[$key]) ? $boiler[$key] : $name;
+        }
+        
+        foreach(self::$methodsNames as $key => $name) {
+            self::$methodsNames[$key] = isset($boiler[$key]) ? $boiler[$key] : $name;
+        }
+        
+        foreach(self::$functionsNames as $key => $name) {
+            self::$functionsNames[$key] = isset($boiler[$key]) ? $boiler[$key] : $name;
+        }
+        
+        foreach(self::$variablesNames as $key => $name) {
+            self::$variablesNames[$key] = isset($boiler[$key]) ? $boiler[$key] : $name;
+        }
         
         if (self::$_stmts !== null) {
             self::$_stmts = self::_obfuscate(self::$_stmts);
@@ -747,28 +723,31 @@ class obfuscator {
     private static function addStringFun() {
         $factory = new PhpParser\BuilderFactory;
 
-        $strings = array();
+        $stringList = array();
         foreach (self::$strings as $key => $string) {
-            $strings[] = new PhpParser\Node\Expr\ArrayItem(
+            $stringList[] = new PhpParser\Node\Expr\ArrayItem(
                 new PhpParser\Node\Scalar\String(base64_encode($string)),
                 new PhpParser\Node\Scalar\LNumber($key)
             );
         }
+        
+        $offset = self::encodeName('offset');
+        $strings = self::encodeName('strings');
 
         $stringFun = $factory
             ->function(self::$_stringsMethodName)
-            ->addParam($factory->param('offset'))
+            ->addParam($factory->param($offset))
             ->addStmts(array(
-                new PhpParser\Node\Expr\Assign(new PhpParser\Node\Expr\Variable('strings'), new PhpParser\Node\Expr\Array_($strings)),
+                new PhpParser\Node\Expr\Assign(new PhpParser\Node\Expr\Variable($strings), new PhpParser\Node\Expr\Array_($stringList)),
                 new PhpParser\Node\Stmt\Return_(new PhpParser\Node\Expr\Ternary(
                     new PhpParser\Node\Expr\Isset_(array(new PhpParser\Node\Expr\ArrayDimFetch(
-                            new PhpParser\Node\Expr\Variable('strings'),
-                            new PhpParser\Node\Expr\Variable('offset')
+                            new PhpParser\Node\Expr\Variable($strings),
+                            new PhpParser\Node\Expr\Variable($offset)
                     ))),
                     new PhpParser\Node\Expr\FuncCall(new PhpParser\Node\Name('base64_decode'), array(
                         new PhpParser\Node\Arg(new PhpParser\Node\Expr\ArrayDimFetch(
-                                new PhpParser\Node\Expr\Variable('strings'),
-                                new PhpParser\Node\Expr\Variable('offset')
+                                new PhpParser\Node\Expr\Variable($strings),
+                                new PhpParser\Node\Expr\Variable($offset)
                         ))
                     )),
                     new PhpParser\Node\Scalar\String('')
@@ -857,7 +836,7 @@ class obfuscator {
         
         echo "\n";
         //*/
-        //*
+        /*
         ini_set('xdebug.var_display_max_depth', -1);
         ini_set('xdebug.var_display_max_children', -1);
         ini_set('xdebug.var_display_max_data', -1);
