@@ -818,7 +818,7 @@ class obfuscator {
                 
                 echo $mname;
                 
-                echo '(' . implode(', ', $method['arguments']) . ')';
+                echo '(' . implode(', ', array_keys($method['arguments'])) . ')';
                 $variables = array();
                 foreach($method['variables'] as $name => $status) {
                     $variables[] = $name . ($status['global'] ? '[g]' : '[l]');
@@ -834,7 +834,7 @@ class obfuscator {
         foreach(self::$functions as $name => $function) {
             echo $name;
             
-            echo '(' . implode(', ', $function['arguments']) . ')';
+            echo '(' . implode(', ', array_keys($function['arguments'])) . ')';
 
             $variables = array();
             foreach($function['variables'] as $name => $status) {
@@ -857,7 +857,7 @@ class obfuscator {
         
         echo "\n";
         //*/
-        /*
+        //*
         ini_set('xdebug.var_display_max_depth', -1);
         ini_set('xdebug.var_display_max_children', -1);
         ini_set('xdebug.var_display_max_data', -1);
