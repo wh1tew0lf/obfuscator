@@ -58,6 +58,7 @@ $c = new C;
 echo "A count: " . A::$count . "\n";
 $a->method1();
 $a->age = 167;
+$a->age = 166+1;
 echo "A Age: {$a->age}\n";
 $b->method1();
 echo "A and B count: {$b->method2()}\n";

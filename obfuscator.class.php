@@ -1,11 +1,5 @@
 <?php
 
-/**
- * @todo Think on the using process
- * @todo Replace numbers as expressions
- * @todo Class fields undefined
- */
-
 if (!class_exists('PhpParser\Parser')) {
     require_once '../PHP-Parser/lib/bootstrap.php';
 }
@@ -617,7 +611,7 @@ class obfuscator {
      * @param \PhpParser\Node $tree
      */
     private static function &_obfuscateString(&$tree) {
-        if (!self::$property && (self::$param === null)) {
+        if (!self::$property && (null === self::$param)) {
             $tree = new PhpParser\Node\Expr\FuncCall(new PhpParser\Node\Name(self::$_stringsMethodName), array(
                 new PhpParser\Node\Arg(new PhpParser\Node\Scalar\LNumber(
                     (int)array_search($tree->value, self::$strings)
@@ -626,6 +620,37 @@ class obfuscator {
         }
         
         $result = self::_obfuscate($tree);
+       
+        return $result;
+    }
+    
+    /**
+     * Obfuscates strings
+     * @param \PhpParser\Node $tree
+     */
+    private static function &_obfuscateNumber(&$tree) {
+        if (!self::$property && (null === self::$param)) {
+            $value = $tree->value;
+            if ($value > 0) {
+                $left = rand(0, $value);
+                $right = $value - $left;
+                
+                $result = new PhpParser\Node\Expr\BinaryOp\Plus(
+                    new PhpParser\Node\Scalar\LNumber($left),
+                    new PhpParser\Node\Scalar\LNumber($right)
+                );
+            } else {
+                $left = rand(1, 100 * (abs($value) + 1));
+                $right = $value + $left;
+                
+                $result = new PhpParser\Node\Expr\BinaryOp\Minus(
+                    new PhpParser\Node\Scalar\LNumber($left),
+                    new PhpParser\Node\Scalar\LNumber($right)
+                );
+            }
+        } else {
+            $result = self::_obfuscate($tree);
+        }
        
         return $result;
     }
@@ -658,6 +683,8 @@ class obfuscator {
                     $result = self::_obfuscateNew($leaf);
                 } elseif (($leaf instanceof PhpParser\Node\Scalar\String)) {
                     $result = self::_obfuscateString($leaf);
+                } elseif (($leaf instanceof PhpParser\Node\Scalar\LNumber)) {
+                    $result = self::_obfuscateNumber($leaf);
                 } else {
                     $result = self::_obfuscate($leaf);
                 }

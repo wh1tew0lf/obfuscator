@@ -3,7 +3,7 @@
 require_once 'obfuscator.class.php';
 
 obfuscator::loadCode('tests/test_03.php');
-//obfuscator::analyze();
+obfuscator::analyze();
 obfuscator::obfuscate();
 
 echo "ERRORS:\n";
