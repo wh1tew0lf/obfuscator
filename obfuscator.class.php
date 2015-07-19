@@ -40,14 +40,6 @@ class obfuscator {
      */
     private static $variables = array();
     
-    /*private static $dynamicProperties = array();
-
-    private static $staticProperties = array();
-
-    private static $dynamicMethods = array();
-
-    private static $staticMethods = array();*/
-
     /**
      * @var array list of srtring variables values 
      */
@@ -74,8 +66,6 @@ class obfuscator {
     private static $global = false;
 
     private static $property = false;
-
-    //private static $globalVariables = array();
 
     /**
      * @var \PhpParser\Node[] code tree
@@ -109,8 +99,6 @@ class obfuscator {
     private static $index = 0;
     
     private static $names = array();
-
-    //private static $types = array();
 
     /**
      * Sigleton for php parser
@@ -634,7 +622,6 @@ class obfuscator {
     
     private static function &_obfuscateString(&$tree) {
         if (!self::$property && (self::$param === null)) {
-            var_dump(array_search($tree->value, self::$strings)); 
             $tree = new PhpParser\Node\Expr\FuncCall(new PhpParser\Node\Name(self::$_stringsMethodName), array(
                 new PhpParser\Node\Arg(new PhpParser\Node\Scalar\LNumber(
                     (int)array_search($tree->value, self::$strings)
@@ -745,42 +732,7 @@ class obfuscator {
         }
         
         self::$names = $boiler;
-        
-        /*foreach(self::$classes as $cname => $content) {
-            self::$classes[$cname]['name'] = isset($boiler[$cname]) ? $boiler[$cname] : $cname;
-            foreach($content['fields'] as $fname => $field) {
-                self::$classes[$cname]['fields'][$fname]['name'] = isset($boiler[$fname]) ? $boiler[$fname] : $fname;
-            }
-            foreach($content['methods'] as $mname => $method) {
-                self::$classes[$cname]['methods'][$mname]['name'] = isset($boiler[$mname]) ? $boiler[$mname] : $mname;
-                foreach($method['arguments'] as $aname => $argument) {
-                    self::$classes[$cname]['methods'][$mname]['arguments'][$aname]['name'] = isset($boiler[$aname]) ? $boiler[$aname] : $aname;
-                }
-                foreach($method['variables'] as $vname => $variable) {
-                    self::$classes[$cname]['methods'][$mname]['variables'][$vname]['name'] = isset($boiler[$vname]) ? $boiler[$vname] : $vname;
-                }
-            }
-        }
-        
-        foreach(self::$functions as $name => $function) {
-            self::$functions[$name]['name'] = isset($boiler[$name]) ? $boiler[$name] : $name;
-            foreach($function['arguments'] as $aname => $argument) {
-                self::$functions[$name]['arguments'][$aname]['name'] = isset($boiler[$aname]) ? $boiler[$aname] : $aname;
-            }
-            foreach($function['variables'] as $vname => $variable) {
-                self::$functions[$name]['variables'][$vname]['name'] = isset($boiler[$vname]) ? $boiler[$vname] : $vname;
-            }
-        }
-        
-        foreach(self::$variables as $name => $status) {
-            self::$variables[$name]['name'] = isset($boiler[$name]) ? $boiler[$name] : $name;
-        }*/
-        
-
-        /*var_dump(self::$classes);
-        var_dump(self::$functions);
-        var_dump(self::$variables);*/
-
+       
         //self::$classes['self'] = '';
         
         if (self::$_stmts !== null) {
@@ -827,16 +779,6 @@ class obfuscator {
     }
     
     public static function report() {
-        //report
-        ini_set('xdebug.var_display_max_depth', -1);
-        ini_set('xdebug.var_display_max_children', -1);
-        ini_set('xdebug.var_display_max_data', -1);
-        /*
-        echo "\nStrings:\n";
-        var_dump(self::$strings);
-        //*/
-        //var_dump(self::$classes);
-        //*
         echo "\nClasses:\n";
         foreach(self::$classes as $cname => $content) {
             echo "\n{$cname} extends {$content['extends']} implements " . implode(', ', $content['implements']) . "\n";
@@ -915,8 +857,11 @@ class obfuscator {
         
         echo "\n";
         //*/
-        //*
-        //var_dump(self::$_stmts);
+        /*
+        ini_set('xdebug.var_display_max_depth', -1);
+        ini_set('xdebug.var_display_max_children', -1);
+        ini_set('xdebug.var_display_max_data', -1);
+        var_dump(self::$_stmts);
         //*/
     }
 }
