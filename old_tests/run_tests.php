@@ -7,15 +7,18 @@ echo "START TESTS:\n";
 
 $test = isset($_GET['test']) ? $_GET['test'] : false;
 
-$testsDir = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR;
+$baseDir = dirname(__FILE__) . DIRECTORY_SEPARATOR;
+$testsDir = $baseDir . 'sources' . DIRECTORY_SEPARATOR;
+$resultsDir = $baseDir . 'results' . DIRECTORY_SEPARATOR;
 
-require_once 'obfuscator.class.php';
+require_once implode(DIRECTORY_SEPARATOR, array($baseDir, '..', 'obfuscator.class.php'));
+
 if (is_dir($testsDir)) {
     if (false !== ($files = scandir($testsDir))) {
         foreach ($files as &$file) {
             if (preg_match('/^test_([0-9]+)\.php$/', $file, $matches) && (!is_numeric($test) || strstr($file, (string)$test))) {
                 echo "Run test file '{$file}'\n";
-                $resultFile = "{$testsDir}res_{$matches[1]}.php";
+                $resultFile = "{$resultsDir}res_{$matches[1]}.php";
 
                 ob_start();
                 obfuscator::loadCode($testsDir . $file);

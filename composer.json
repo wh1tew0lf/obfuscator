@@ -3,7 +3,7 @@
     "description": "A PHP obfuscator written in PHP. Simple and stupid",
     "keywords": ["php", "obfuscator"],
     "type": "project",
-    "license": "BSD-3-Clause",
+    "license": "MIT",
     "authors": [
         {
             "name": "Danil Volkov"

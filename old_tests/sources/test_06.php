@@ -2,7 +2,7 @@
 /**
  * Test for global vars replacement
  */
-require_once 'includes.php';
+require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'includes.php';
 global $globalObj;
 
 function show($var = 'some text') {

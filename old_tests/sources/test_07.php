@@ -2,7 +2,7 @@
 /**
  * Test for global methods replacement
  */
-require_once 'includes.php';
+require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'includes.php';
 global $globalObj;
 
 class TheTest {

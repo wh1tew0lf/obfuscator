@@ -6,4 +6,4 @@ nbproject
 composer.lock
 
 #results files
-*res*
+*res_*
