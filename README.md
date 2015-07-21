@@ -13,3 +13,9 @@ obfuscator::saveCode(/*Some file path*/);
 //or obfuscator::getCode();
 </code></pre>
 
+TODO:
+1. Minification
+2. Base64 encoding
+3. GZip
+4. Eval
+5. Obfuscate folder
