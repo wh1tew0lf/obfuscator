@@ -11,7 +11,7 @@ $baseDir = dirname(__FILE__) . DIRECTORY_SEPARATOR;
 $testsDir = $baseDir . 'sources' . DIRECTORY_SEPARATOR;
 $resultsDir = $baseDir . 'results' . DIRECTORY_SEPARATOR;
 
-require_once implode(DIRECTORY_SEPARATOR, array($baseDir, '..', 'obfuscator.class.php'));
+require_once implode(DIRECTORY_SEPARATOR, array($baseDir, '..', 'classes', 'obfuscator.class.php'));
 
 if (is_dir($testsDir)) {
     if (false !== ($files = scandir($testsDir))) {
