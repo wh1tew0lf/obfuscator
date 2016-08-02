@@ -7,3 +7,6 @@ composer.lock
 
 #results files
 *res_*
+.idea/
+/.idea/
+
