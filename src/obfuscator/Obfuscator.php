@@ -122,7 +122,7 @@ class Obfuscator {
      */
     private static function _parser() {
         if (self::$parser === null) {
-            self::$parser = new \PhpParser\Parser(new \PhpParser\Lexer);
+            self::$parser = (new \PhpParser\ParserFactory())->create(\PhpParser\ParserFactory::PREFER_PHP5);
         }
         return self::$parser;
     }
@@ -861,7 +861,7 @@ class Obfuscator {
                                 new \PhpParser\Node\Expr\Variable($offset)
                         ))
                     )),
-                    new \PhpParser\Node\Scalar\String('')
+                    new \PhpParser\Node\Scalar\String_('')
                 ))
             ))
             ->getNode();

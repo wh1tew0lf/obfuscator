@@ -19,13 +19,14 @@
     },
     "autoload": {
         "psr-4": {
-            "obfuscationTest\\": "test/"
+            "obfuscationTest\\": "test/",
+            "wh1tew0lf\\" : "src/"
         }
     },
     "repositories":[
         {
             "type":"git",
-            "url":"http://github.com/nikic/PHP-Parser"
+            "url":"https://github.com/nikic/PHP-Parser"
         }
     ],
     "scripts": {
