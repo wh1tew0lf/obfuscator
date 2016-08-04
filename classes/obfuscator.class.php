@@ -1,12 +1,12 @@
 <?php
 
-require_once implode(DIRECTORY_SEPARATOR, array(dirname(__FILE__), '..', 'vendor', 'autoload.php'));
+namespace wh1tew0lf\obfuscator;
 
 /**
  * Static class for obfuscate php code
  * @version 1.1
  */
-class obfuscator {
+class Obfuscator {
 
     /**
      * @var array list of errors
@@ -14,7 +14,7 @@ class obfuscator {
     private static $errors = array();
 
     /**
-     * @var PhpParser\Parser php code parser
+     * @var \PhpParser\Parser php code parser
      */
     private static $parser = null;
     
@@ -118,11 +118,11 @@ class obfuscator {
 
     /**
      * Sigleton for php parser
-     * @return PhpParser\Parser
+     * @return \PhpParser\Parser
      */
     private static function _parser() {
         if (self::$parser === null) {
-            self::$parser = new PhpParser\Parser(new PhpParser\Lexer);
+            self::$parser = new \PhpParser\Parser(new \PhpParser\Lexer);
         }
         return self::$parser;
     }
@@ -193,14 +193,14 @@ class obfuscator {
         $parser = self::_parser();
         try {
             self::$_stmts = $parser->parse($code);
-        } catch (PhpParser\Error $e) {
+        } catch (\PhpParser\Error $e) {
             self::$errors[] = $e->getMessage();
         }
     }
 
     public static function getCode() {
         if (self::$_stmts !== null) {
-            $prettyPrinter = new PhpParser\PrettyPrinter\Standard;
+            $prettyPrinter = new \PhpParser\PrettyPrinter\Standard;
             return '<?php ' . $prettyPrinter->prettyPrint(self::$_stmts);
         } else {
             return '<?php';
@@ -385,21 +385,21 @@ class obfuscator {
     private static function _analyze(&$tree) {
         if (is_array($tree) || is_object($tree)) {
             foreach($tree as &$leaf) {
-                if ($leaf instanceof PhpParser\Node\Stmt\Class_) {
+                if ($leaf instanceof \PhpParser\Node\Stmt\Class_) {
                     self::_analyzeClass($leaf);
-                } elseif($leaf instanceof PhpParser\Node\Stmt\ClassMethod) {
+                } elseif($leaf instanceof \PhpParser\Node\Stmt\ClassMethod) {
                     self::_analyzeMethod($leaf);
-                } elseif($leaf instanceof PhpParser\Node\Stmt\Property) {
+                } elseif($leaf instanceof \PhpParser\Node\Stmt\Property) {
                     self::_analyzeProperty($leaf);
-                } elseif($leaf instanceof PhpParser\Node\Stmt\Function_) {
+                } elseif($leaf instanceof \PhpParser\Node\Stmt\Function_) {
                     self::_analyzeFunction($leaf);
-                } elseif($leaf instanceof PhpParser\Node\Stmt\Global_) {
+                } elseif($leaf instanceof \PhpParser\Node\Stmt\Global_) {
                     self::_analyzeGlobal($leaf);
-                } elseif($leaf instanceof PhpParser\Node\Param) {
+                } elseif($leaf instanceof \PhpParser\Node\Param) {
                     self::_analyzeParam($leaf);
-                } elseif($leaf instanceof PhpParser\Node\Expr\Variable) {
+                } elseif($leaf instanceof \PhpParser\Node\Expr\Variable) {
                     self::_analyzeVariable($leaf);
-                } elseif($leaf instanceof PhpParser\Node\Scalar\String) {
+                } elseif($leaf instanceof \PhpParser\Node\Scalar\String) {
                     self::_analyzeString($leaf);
                 } else {
                     self::_analyze($leaf);
@@ -444,13 +444,13 @@ class obfuscator {
     private static function &_beforeObfuscate(&$tree) {
         if (is_array($tree) || is_object($tree)) {
             foreach($tree as $node => &$leaf) {
-                if ($leaf instanceof PhpParser\Node\Scalar\Encapsed) {
+                if ($leaf instanceof \PhpParser\Node\Scalar\Encapsed) {
                     $concat = false;
                     foreach ($leaf->parts as &$part) {
                         if ($concat === false) {
-                            $concat = is_string($part) ? new PhpParser\Node\Scalar\String($part) : $part;
+                            $concat = is_string($part) ? new \PhpParser\Node\Scalar\String($part) : $part;
                         } else {
-                            $concat = new PhpParser\Node\Expr\BinaryOp\Concat($concat, is_string($part) ? new PhpParser\Node\Scalar\String($part) : $part);
+                            $concat = new \PhpParser\Node\Expr\BinaryOp\Concat($concat, is_string($part) ? new \PhpParser\Node\Scalar\String($part) : $part);
                         }
                     }
                     if (is_object($tree)) {
@@ -461,7 +461,7 @@ class obfuscator {
                         self::$errors[] = 'Undefined tree element!';
                     }
                 }
-                if (($leaf instanceof PhpParser\NodeAbstract) && (null !== $leaf->getAttribute('comments'))) {
+                if (($leaf instanceof \PhpParser\NodeAbstract) && (null !== $leaf->getAttribute('comments'))) {
                     $leaf->setAttribute('comments', array());
                 }
                 if (is_object($tree)) {
@@ -483,14 +483,14 @@ class obfuscator {
     private static function &_obfuscateClass(&$tree) {
         self::$class = $tree->name;
         if (isset(self::$classesNames[(string)$tree->name])) {
-            if ($tree->name instanceof PhpParser\Node\Name) {
+            if ($tree->name instanceof \PhpParser\Node\Name) {
                 $tree->name->set(self::$classesNames[$tree->name->toString()]);
             } else {
                 $tree->name = self::$classesNames[$tree->name];
             }
         }
         if (isset(self::$classesNames[(string)$tree->extends])) {
-            if ($tree->extends instanceof PhpParser\Node\Name) {
+            if ($tree->extends instanceof \PhpParser\Node\Name) {
                 $tree->extends->set(self::$classesNames[$tree->extends->toString()]);
             } else {
                 $tree->extends = self::$classesNames[$tree->extends];
@@ -506,25 +506,25 @@ class obfuscator {
      * @param \PhpParser\Node $tree
      */
     private static function &_obfuscateMethod(&$tree) {
-        if ($tree instanceof PhpParser\Node\Stmt\ClassMethod) {
+        if ($tree instanceof \PhpParser\Node\Stmt\ClassMethod) {
             self::$callable = $tree->name;
         }
         
         if (isset(self::$methodsNames[(string)$tree->name])) {
-            if ($tree->name instanceof PhpParser\Node\Name) {
+            if ($tree->name instanceof \PhpParser\Node\Name) {
                 $tree->name->set(self::$methodsNames[$tree->name->toString()]);
             } else {
                 $tree->name = self::$methodsNames[$tree->name];
             }
         }
         
-        if ($tree instanceof PhpParser\Node\Expr\StaticCall) {
+        if ($tree instanceof \PhpParser\Node\Expr\StaticCall) {
             $result = self::_obfuscateNew($tree);
         } else {
             $result = self::_obfuscate($tree);
         }
         
-        if ($tree instanceof PhpParser\Node\Stmt\ClassMethod) {
+        if ($tree instanceof \PhpParser\Node\Stmt\ClassMethod) {
             self::$callable = null;
         }
         return $result;
@@ -535,12 +535,12 @@ class obfuscator {
      * @param \PhpParser\Node $tree
      */
     private static function &_obfuscateFunction(&$tree) {
-        if ($tree instanceof PhpParser\Node\Stmt\Function_) {
+        if ($tree instanceof \PhpParser\Node\Stmt\Function_) {
             self::$callable = $tree->name;
         }
         
         if (isset(self::$functionsNames[(string)$tree->name])) {
-            if ($tree->name instanceof PhpParser\Node\Name) {
+            if ($tree->name instanceof \PhpParser\Node\Name) {
                 $tree->name->set(self::$functionsNames[$tree->name->toString()]);
             } else {
                 $tree->name = self::$functionsNames[$tree->name];
@@ -549,7 +549,7 @@ class obfuscator {
         
         $result = self::_obfuscate($tree);
         
-        if ($tree instanceof PhpParser\Node\Stmt\Function_) {
+        if ($tree instanceof \PhpParser\Node\Stmt\Function_) {
             self::$callable = null;
         }
         return $result;
@@ -560,25 +560,25 @@ class obfuscator {
      * @param \PhpParser\Node $tree
      */
     private static function &_obfuscateProperty(&$tree) {
-        if ($tree instanceof PhpParser\Node\Stmt\PropertyProperty) {
+        if ($tree instanceof \PhpParser\Node\Stmt\PropertyProperty) {
             self::$property = true;
         }
         
         if (isset(self::$variablesNames[(string)$tree->name])) {
-            if ($tree->name instanceof PhpParser\Node\Name) {
+            if ($tree->name instanceof \PhpParser\Node\Name) {
                 $tree->name->set(self::$variablesNames[$tree->name->toString()]);
             } else {
                 $tree->name = self::$variablesNames[$tree->name];
             }
         }
         
-        if ($tree instanceof PhpParser\Node\Expr\StaticPropertyFetch) {
+        if ($tree instanceof \PhpParser\Node\Expr\StaticPropertyFetch) {
             $result = self::_obfuscateNew($tree);
         } else {
             $result = self::_obfuscate($tree);
         }
         
-        if ($tree instanceof PhpParser\Node\Stmt\PropertyProperty) {
+        if ($tree instanceof \PhpParser\Node\Stmt\PropertyProperty) {
             self::$property = null;
         }
        
@@ -590,7 +590,7 @@ class obfuscator {
      * @param \PhpParser\Node $tree
      */
     private static function &_obfuscateVariable(&$tree) {
-        if ($tree instanceof PhpParser\Node\Param) {
+        if ($tree instanceof \PhpParser\Node\Param) {
             self::$param = $tree->name;
         }
         
@@ -607,7 +607,7 @@ class obfuscator {
         }
         
         if (isset(self::$variablesNames[(string)$tree->name]) && !$global) {
-            if ($tree->name instanceof PhpParser\Node\Name) {
+            if ($tree->name instanceof \PhpParser\Node\Name) {
                 $tree->name->set(self::$variablesNames[$tree->name->toString()]);
             } else {
                 $tree->name = self::$variablesNames[$tree->name];
@@ -615,7 +615,7 @@ class obfuscator {
         }
         
         $result = self::_obfuscate($tree);
-        if ($tree instanceof PhpParser\Node\Param) {
+        if ($tree instanceof \PhpParser\Node\Param) {
             self::$param = null;
         }
         return $result;
@@ -627,7 +627,7 @@ class obfuscator {
      */
     private static function &_obfuscateNew(&$tree) {
         if (isset(self::$classesNames[(string)$tree->class])) {
-            if ($tree->class instanceof PhpParser\Node\Name) {
+            if ($tree->class instanceof \PhpParser\Node\Name) {
                 $tree->class->set(self::$classesNames[$tree->class->toString()]);
             } else {
                 $tree->class = self::$classesNames[$tree->class];
@@ -645,8 +645,8 @@ class obfuscator {
      */
     private static function &_obfuscateString(&$tree) {
         if (!self::$property && (null === self::$param)) {
-            $tree = new PhpParser\Node\Expr\FuncCall(new PhpParser\Node\Name(self::$_stringsMethodName), array(
-                new PhpParser\Node\Arg(new PhpParser\Node\Scalar\LNumber(
+            $tree = new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Name(self::$_stringsMethodName), array(
+                new \PhpParser\Node\Arg(new \PhpParser\Node\Scalar\LNumber(
                     (int)array_search($tree->value, self::$strings)
                 ))
             ));
@@ -668,17 +668,17 @@ class obfuscator {
                 $left = rand(0, $value);
                 $right = $value - $left;
                 
-                $result = new PhpParser\Node\Expr\BinaryOp\Plus(
-                    new PhpParser\Node\Scalar\LNumber($left),
-                    new PhpParser\Node\Scalar\LNumber($right)
+                $result = new \PhpParser\Node\Expr\BinaryOp\Plus(
+                    new \PhpParser\Node\Scalar\LNumber($left),
+                    new \PhpParser\Node\Scalar\LNumber($right)
                 );
             } else {
                 $left = rand(1, 100 * (abs($value) + 1));
                 $right = $value + $left;
                 
-                $result = new PhpParser\Node\Expr\BinaryOp\Minus(
-                    new PhpParser\Node\Scalar\LNumber($left),
-                    new PhpParser\Node\Scalar\LNumber($right)
+                $result = new \PhpParser\Node\Expr\BinaryOp\Minus(
+                    new \PhpParser\Node\Scalar\LNumber($left),
+                    new \PhpParser\Node\Scalar\LNumber($right)
                 );
             }
         } else {
@@ -695,28 +695,28 @@ class obfuscator {
     private static function &_obfuscate(&$tree) {
         if (is_array($tree) || is_object($tree)) {
             foreach($tree as $node => &$leaf) {
-                if ($leaf instanceof PhpParser\Node\Stmt\Class_) {
+                if ($leaf instanceof \PhpParser\Node\Stmt\Class_) {
                     $result = self::_obfuscateClass($leaf);
-                } elseif (($leaf instanceof PhpParser\Node\Stmt\ClassMethod) ||
-                    ($leaf instanceof PhpParser\Node\Expr\StaticCall) ||
-                    ($leaf instanceof PhpParser\Node\Expr\MethodCall)) {
+                } elseif (($leaf instanceof \PhpParser\Node\Stmt\ClassMethod) ||
+                    ($leaf instanceof \PhpParser\Node\Expr\StaticCall) ||
+                    ($leaf instanceof \PhpParser\Node\Expr\MethodCall)) {
                     $result = self::_obfuscateMethod($leaf);
-                } elseif (($leaf instanceof PhpParser\Node\Stmt\Function_) ||
-                    ($leaf instanceof PhpParser\Node\Expr\FuncCall)) {
+                } elseif (($leaf instanceof \PhpParser\Node\Stmt\Function_) ||
+                    ($leaf instanceof \PhpParser\Node\Expr\FuncCall)) {
                     $result = self::_obfuscateFunction($leaf);
-                } elseif (($leaf instanceof PhpParser\Node\Expr\PropertyFetch) ||
-                    //($leaf instanceof PhpParser\Node\Stmt\Property) ||
-                    ($leaf instanceof PhpParser\Node\Stmt\PropertyProperty) ||
-                    ($leaf instanceof PhpParser\Node\Expr\StaticPropertyFetch)) {
+                } elseif (($leaf instanceof \PhpParser\Node\Expr\PropertyFetch) ||
+                    //($leaf instanceof \PhpParser\Node\Stmt\Property) ||
+                    ($leaf instanceof \PhpParser\Node\Stmt\PropertyProperty) ||
+                    ($leaf instanceof \PhpParser\Node\Expr\StaticPropertyFetch)) {
                     $result = self::_obfuscateProperty($leaf);
-                } elseif (($leaf instanceof PhpParser\Node\Expr\Variable) ||
-                    ($leaf instanceof PhpParser\Node\Param)) {
+                } elseif (($leaf instanceof \PhpParser\Node\Expr\Variable) ||
+                    ($leaf instanceof \PhpParser\Node\Param)) {
                     $result = self::_obfuscateVariable($leaf);
-                } elseif ($leaf instanceof PhpParser\Node\Expr\New_) {
+                } elseif ($leaf instanceof \PhpParser\Node\Expr\New_) {
                     $result = self::_obfuscateNew($leaf);
-                } elseif (($leaf instanceof PhpParser\Node\Scalar\String)) {
+                } elseif (($leaf instanceof \PhpParser\Node\Scalar\String)) {
                     $result = self::_obfuscateString($leaf);
-                } elseif (($leaf instanceof PhpParser\Node\Scalar\LNumber)) {
+                } elseif (($leaf instanceof \PhpParser\Node\Scalar\LNumber)) {
                     $result = self::_obfuscateNumber($leaf);
                 } else {
                     $result = self::_obfuscate($leaf);
@@ -832,13 +832,13 @@ class obfuscator {
      * Add to code strings function
      */
     private static function addStringFunction() {
-        $factory = new PhpParser\BuilderFactory;
+        $factory = new \PhpParser\BuilderFactory;
 
         $stringList = array();
         foreach (self::$strings as $key => $string) {
-            $stringList[] = new PhpParser\Node\Expr\ArrayItem(
-                new PhpParser\Node\Scalar\String(base64_encode($string)),
-                new PhpParser\Node\Scalar\LNumber($key)
+            $stringList[] = new \PhpParser\Node\Expr\ArrayItem(
+                new \PhpParser\Node\Scalar\String(base64_encode($string)),
+                new \PhpParser\Node\Scalar\LNumber($key)
             );
         }
         
@@ -849,19 +849,19 @@ class obfuscator {
             ->function(self::$_stringsMethodName)
             ->addParam($factory->param($offset))
             ->addStmts(array(
-                new PhpParser\Node\Expr\Assign(new PhpParser\Node\Expr\Variable($strings), new PhpParser\Node\Expr\Array_($stringList)),
-                new PhpParser\Node\Stmt\Return_(new PhpParser\Node\Expr\Ternary(
-                    new PhpParser\Node\Expr\Isset_(array(new PhpParser\Node\Expr\ArrayDimFetch(
-                            new PhpParser\Node\Expr\Variable($strings),
-                            new PhpParser\Node\Expr\Variable($offset)
+                new \PhpParser\Node\Expr\Assign(new \PhpParser\Node\Expr\Variable($strings), new \PhpParser\Node\Expr\Array_($stringList)),
+                new \PhpParser\Node\Stmt\Return_(new \PhpParser\Node\Expr\Ternary(
+                    new \PhpParser\Node\Expr\Isset_(array(new \PhpParser\Node\Expr\ArrayDimFetch(
+                            new \PhpParser\Node\Expr\Variable($strings),
+                            new \PhpParser\Node\Expr\Variable($offset)
                     ))),
-                    new PhpParser\Node\Expr\FuncCall(new PhpParser\Node\Name('base64_decode'), array(
-                        new PhpParser\Node\Arg(new PhpParser\Node\Expr\ArrayDimFetch(
-                                new PhpParser\Node\Expr\Variable($strings),
-                                new PhpParser\Node\Expr\Variable($offset)
+                    new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Name('base64_decode'), array(
+                        new \PhpParser\Node\Arg(new \PhpParser\Node\Expr\ArrayDimFetch(
+                                new \PhpParser\Node\Expr\Variable($strings),
+                                new \PhpParser\Node\Expr\Variable($offset)
                         ))
                     )),
-                    new PhpParser\Node\Scalar\String('')
+                    new \PhpParser\Node\Scalar\String('')
                 ))
             ))
             ->getNode();
